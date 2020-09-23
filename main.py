@@ -1,6 +1,8 @@
 import arcpy
 import pandas as pd
 from arcpy import env
+import numpy as np
+import math
 
 arcpy.ImportToolbox(arcpy.env.workspace+"\\..\\ExcelTools\\Excel and CSV Conversion Tools")
 
@@ -31,6 +33,7 @@ complete = arcpy.env.workspace+"\\shapes\\complete.shp"
 complete_dissolve = arcpy.env.workspace+"\\shapes\\complete_Dissolve.shp"
 # Files used in the accumulation of the flow
 nodes_csv = arcpy.env.workspace+"\\shapes\\nodes.csv"
+fogne3_csv = arcpy.env.workspace+"\\shapes\\fogne3.csv"
 segments_csv = arcpy.env.workspace+"\\shapes\\segments.csv"
 up_nodes = arcpy.env.workspace+"\\shapes\\upnodes.csv"
 table_csv = arcpy.env.workspace+"\\shapes\\upnodes_CSVToTable.dbf"
@@ -72,8 +75,8 @@ for i in range (len(df_pipes)):
    zend = (df_nodes[df_nodes['point'] == df_pipes.iloc[i,3]]['Z']).iloc[0]
    if zini<=zend:
       trouble_pipes.append(df_pipes.iloc[i,0])
-arcpy.Delete_management(nodes_csv)
 arcpy.Delete_management(segments_csv)
+arcpy.Delete_management(nodes_csv)
 if len(trouble_pipes)>0:
    arcpy.AddError("The Following pipes have geometry troubles. Please correct the elevations in the 'nodes' shapefile or redraw the network in the 'NET' shapefile. Then run the Script2")
    arcpy.AddError(trouble_pipes)
@@ -185,27 +188,24 @@ arcpy.CalculateField_management(fogne3, "Node", "[POINT_X]+[POINT_Y]")
 # Compute maximum capacity of the pipes adding Z information
 arcpy.AddMessage("Computing capacity of the pipes ...")
 # Add required fields
-[arcpy.AddField_management(segment2,field_name,"DOUBLE") for field_name in ['slope', 'length', 'max_capaci', 'd', 'h', 'theta', 'K', 's', 'A', 'Pw', 'Rh', 'RS', 'C', 'Q']]
-# Compute the fields created in the previous line
-arcpy.UpdateFeatureZ_3d(segment2, DEM, method="BILINEAR", status_field="")
-arcpy.AddZInformation_3d(segment2, out_property="Z_MIN", noise_filtering="NO_FILTER")
-arcpy.AddZInformation_3d(segment2, out_property="Z_MAX", noise_filtering="NO_FILTER")
-arcpy.AddZInformation_3d(segment2, out_property="Z_MEAN", noise_filtering="NO_FILTER")
+[arcpy.AddField_management(segment2,field_name,"DOUBLE") for field_name in ['z_start','z_end','slope', 'length', 'max_capaci', 'd', 'theta', 'A', 'Rh', 'ks', 'Q', 'Qr_Q']]
+arcpy.JoinField_management(segment2, "start", fogne3, "Node", fields="MEAN_Z")
+arcpy.JoinField_management(segment2, "end", fogne3, "Node", fields="MEAN_Z")
 arcpy.CalculateField_management(segment2,'length','!shape.length!','PYTHON')
-arcpy.CalculateField_management(segment2, "slope", expression="([Z_max]-[Z_min])/[length]")
+arcpy.CalculateField_management(segment2,'z_start',"[MEAN_Z]")
+arcpy.CalculateField_management(segment2,'z_end',"[MEAN_Z_1]")
+arcpy.CalculateField_management(segment2, "slope", "([z_start]-[z_end])/[length]")
 arcpy.CalculateField_management(segment2,'max_capaci',str(max_capaci))
 arcpy.CalculateField_management(segment2,'d',"[Diameter_m]*[max_capaci]")
-arcpy.CalculateField_management(segment2,"h","[Diameter_m]-[d]")
-arcpy.CalculateField_management(segment2,"theta","2*math.acos( (!Diameter_m!/2- !h!)/ (!Diameter_m!/2) )",'PYTHON')
-arcpy.CalculateField_management(segment2,"K","0.5*((!Diameter_m!/2)**2)*(!theta!-math.sin(!theta!))",'PYTHON')
-arcpy.CalculateField_management(segment2,"s","[theta]*[Diameter_m]/2")
-arcpy.CalculateField_management(segment2,"A","math.pi*((!Diameter_m!/2)**2)-!K!",'PYTHON')
-arcpy.CalculateField_management(segment2,"Pw","2*math.pi*(!Diameter_m!/2)-!s!",'PYTHON')
-arcpy.CalculateField_management(segment2,"Rh","[A]/[Pw]")
-arcpy.CalculateField_management(segment2,"RS","[Rh]*[slope]")
-arcpy.CalculateField_management(segment2,"C","87/(1+0.06/math.sqrt(!Rh!))",'PYTHON')
-arcpy.CalculateField_management(segment2,"Q","!C!*math.sqrt(!RS!)*math.pi*((!Diameter_m!/2)**2)",'PYTHON')
+arcpy.CalculateField_management(segment2,"theta","2*math.acos(1 - 2*(!Diameter_m!*(1-!max_capaci!))/!Diameter_m!)",'PYTHON')
+arcpy.CalculateField_management(segment2,"A","math.pi*(!Diameter_m!**2)/4-((!Diameter_m!)**2)*(!theta!-math.sin(!theta!))/8",'PYTHON')
+arcpy.CalculateField_management(segment2,"Rh","!A!/(math.pi*!Diameter_m!-!Diameter_m!*!theta!/2)",'PYTHON')
+arcpy.CalculateField_management(segment2,"ks","75")
+arcpy.CalculateField_management(segment2,"Q","!A!*!ks!*!Rh!**(2./3)*math.sqrt(!slope!)",'PYTHON')
+arcpy.CalculateField_management(segment2,"Qr_Q","1/(!ks!*math.sqrt(!slope!)*(!Diameter_m!**(8./3)))",'PYTHON')
 
+# Delete useless fields
+arcpy.DeleteField_management(segment2, ["MEAN_Z", "MEAN_Z_1"])
 
 # Accumulate the flow in the network
 arcpy.AddMessage("Accumulating the flow ...")
@@ -274,15 +274,18 @@ arcpy.mapping.AddLayer(df,addLayer)
 
 # Add the information of the acumulated flow to the pipes and compare those values
 arcpy.AddMessage("Comparing the flow capacity of the pipes with the flow accumulated in the system ...")
-arcpy.SpatialJoin_analysis(target_features=segment2, join_features="Fogne4", out_feature_class=split2, join_operation="JOIN_ONE_TO_ONE", join_type="KEEP_ALL", field_mapping='Q "Q" true true false 19 Double 0 0 ,First,#,segment2,Q,-1,-1;acum10 "acum10" true true false 19 Double 0 0 ,Min,#,Fogne4,acum10,-1,-1;acum30 "acum30" true true false 19 Double 0 0 ,Min,#,Fogne4,acum30,-1,-1;acum50 "acum50" true true false 19 Double 0 0 ,Min,#,Fogne4,acum50,-1,-1;acum100 "acum100" true true false 19 Double 0 0 ,Min,#,Fogne4,acum100,-1,-1', match_option="INTERSECT", search_radius="", distance_field_name="")
-arcpy.AddField_management(split2, "behav_10", "double")
+arcpy.SpatialJoin_analysis(target_features=segment2, join_features="Fogne4", out_feature_class=split2, join_operation="JOIN_ONE_TO_ONE", join_type="KEEP_ALL", field_mapping='Q "Q" true true false 19 Double 0 0 ,First,#,segment2,Q,-1,-1;Qr_Q "Qr_Q" true true false 19 Double 0 0 ,First,#,segment2,Qr_Q,-1,-1;z_start "z_start" true true false 19 Double 0 0 ,First,#,segment2,z_start,-1,-1;z_end "z_end" true true false 19 Double 0 0 ,First,#,segment2,z_end,-1,-1;Diameter_m "Diameter_m" true true false 19 Double 0 0 ,First,#,segment2,Diameter_m,-1,-1;slope "slope" true true false 19 Double 0 0 ,First,#,segment2,slope,-1,-1;acum10 "acum10" true true false 19 Double 0 0 ,Min,#,Fogne4,acum10,-1,-1;acum30 "acum30" true true false 19 Double 0 0 ,Min,#,Fogne4,acum30,-1,-1;acum50 "acum50" true true false 19 Double 0 0 ,Min,#,Fogne4,acum50,-1,-1;acum100 "acum100" true true false 19 Double 0 0 ,Min,#,Fogne4,acum100,-1,-1', match_option="INTERSECT", search_radius="", distance_field_name="")
+[arcpy.AddField_management(split2,field_name,"DOUBLE") for field_name in ['behav_10','behav_30','behav_50', 'behav_100', 'h_10', 'h_30', 'h_50', 'h_100']]
 arcpy.CalculateField_management(split2,"behav_10","[Q]-[acum10]")
-arcpy.AddField_management(split2, "behav_30", "double")
 arcpy.CalculateField_management(split2,"behav_30","[Q]-[acum30]")
-arcpy.AddField_management(split2, "behav_50", "double")
 arcpy.CalculateField_management(split2,"behav_50","[Q]-[acum50]")
-arcpy.AddField_management(split2, "behav_100", "double")
 arcpy.CalculateField_management(split2,"behav_100","[Q]-[acum100]")
+cd_blk = """def altura(Q_r, diametro, flujo):\n   Qr=Q_r*flujo\n   if Qr>0.320529:\n      hola = diametro\n   else:\n      hola = diametro*0.926*math.sqrt(1-math.sqrt(1-3.110*Qr))\n   return hola"""
+arcpy.CalculateField_management(split2, "h_10", "altura( !Qr_Q!, !Diameter_m!, !acum10!)", "PYTHON_9.3", cd_blk)
+arcpy.CalculateField_management(split2, "h_30", "altura( !Qr_Q!, !Diameter_m!, !acum30!)", "PYTHON_9.3", cd_blk)
+arcpy.CalculateField_management(split2, "h_50", "altura( !Qr_Q!, !Diameter_m!, !acum50!)", "PYTHON_9.3", cd_blk)
+arcpy.CalculateField_management(split2, "h_100", "altura( !Qr_Q!, !Diameter_m!, !acum100!)", "PYTHON_9.3", cd_blk)
+arcpy.DeleteField_management(split2, ["Qr_Q"])
 
 # Turn off non relevant layers 
 turn_off = ["Fogne4","fogne2_Dissolve","fogne2","nodes","segments","segment2","fogne3","NET","complete_Dissolve","complete","losses_Dissolve","losses","clip_thiessen","thiessen"]

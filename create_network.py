@@ -1,10 +1,12 @@
+# Importar librerias necesarias
 import arcpy
 import pandas as pd
 from arcpy import env
 
+# Importar Toolbox
 arcpy.ImportToolbox(arcpy.env.workspace+"\\..\\ExcelTools\\Excel and CSV Conversion Tools")
 
-# DEM, nodes and segments
+# Dfinit ubicaciones del DEM, nodes, segments, nodes_csv, segments_csv
 DEM = arcpy.env.workspace+"\\..\\Lombardy\\Lecco\\rasters\\dem\\DTM5_LC.img"
 nodes = arcpy.env.workspace+"\\shapes\\nodes.shp"
 segments = arcpy.env.workspace+"\\shapes\\segments.shp"
@@ -16,7 +18,7 @@ arcpy.AddMessage("Deleting old files ...")
 arcpy.Delete_management(nodes)
 arcpy.Delete_management(segments)
 
-# Input Files [Network, analysis limits]
+# -Read Input Files from those selected in the visual screen [Network, analysis limits]
 polyline = arcpy.GetParameter(0)
 
 # Create the sewers in the polyline vertices
@@ -43,7 +45,7 @@ arcpy.CalculateField_management(segments,'end',"[END_X] + [END_Y]")
 arcpy.DeleteField_management(segments, ["Id", "Id_fog", "START_X", "START_Y", "START_Z", "START_M", "MID_X", "MID_Y", "MID_Z", "MID_M", "END_X", "END_Y", "END_Z", "END_M"])
 
 # Check the network
-# Test if the network has been correctly drawn
+# Test if the network has been correctly drawn (This is done in Python, not in arcgis)
 arcpy.AddMessage("Checking the geometry of the sewer system ...")
 arcpy.TableToCSV_tableconversion(nodes, nodes_csv, "COMMA")
 arcpy.TableToCSV_tableconversion(segments, segments_csv, "COMMA")

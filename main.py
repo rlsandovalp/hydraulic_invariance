@@ -202,7 +202,7 @@ arcpy.CalculateField_management(segment2,"A","math.pi*(!Diameter_m!**2)/4-((!Dia
 arcpy.CalculateField_management(segment2,"Rh","!A!/(math.pi*!Diameter_m!-!Diameter_m!*!theta!/2)",'PYTHON')
 arcpy.CalculateField_management(segment2,"ks","75")
 arcpy.CalculateField_management(segment2,"Q","!A!*!ks!*!Rh!**(2./3)*math.sqrt(!slope!)",'PYTHON')
-arcpy.CalculateField_management(segment2,"Qr_Q","1/(!ks!*math.sqrt(!slope!)*(!Diameter_m!**(8./3)))",'PYTHON')
+arcpy.CalculateField_management(segment2,"Qr_Q","1./(!ks!*math.sqrt(!slope!)*(!Diameter_m!**(8./3)))",'PYTHON')
 
 # Delete useless fields
 arcpy.DeleteField_management(segment2, ["MEAN_Z", "MEAN_Z_1"])
@@ -274,7 +274,7 @@ arcpy.mapping.AddLayer(df,addLayer)
 
 # Add the information of the acumulated flow to the pipes and compare those values
 arcpy.AddMessage("Comparing the flow capacity of the pipes with the flow accumulated in the system ...")
-arcpy.SpatialJoin_analysis(target_features=segment2, join_features="Fogne4", out_feature_class=split2, join_operation="JOIN_ONE_TO_ONE", join_type="KEEP_ALL", field_mapping='Q "Q" true true false 19 Double 0 0 ,First,#,segment2,Q,-1,-1;Qr_Q "Qr_Q" true true false 19 Double 0 0 ,First,#,segment2,Qr_Q,-1,-1;z_start "z_start" true true false 19 Double 0 0 ,First,#,segment2,z_start,-1,-1;z_end "z_end" true true false 19 Double 0 0 ,First,#,segment2,z_end,-1,-1;Diameter_m "Diameter_m" true true false 19 Double 0 0 ,First,#,segment2,Diameter_m,-1,-1;slope "slope" true true false 19 Double 0 0 ,First,#,segment2,slope,-1,-1;acum10 "acum10" true true false 19 Double 0 0 ,Min,#,Fogne4,acum10,-1,-1;acum30 "acum30" true true false 19 Double 0 0 ,Min,#,Fogne4,acum30,-1,-1;acum50 "acum50" true true false 19 Double 0 0 ,Min,#,Fogne4,acum50,-1,-1;acum100 "acum100" true true false 19 Double 0 0 ,Min,#,Fogne4,acum100,-1,-1', match_option="INTERSECT", search_radius="", distance_field_name="")
+arcpy.SpatialJoin_analysis(target_features=segment2, join_features="Fogne4", out_feature_class=split2, join_operation="JOIN_ONE_TO_ONE", join_type="KEEP_ALL", field_mapping='Q "Q" true true false 19 Double 0 0 ,First,#,segment2,Q,-1,-1;Qr_Q "Qr_Q" true true false 19 Double 0 0 ,First,#,segment2,Qr_Q,-1,-1;length "length" true true false 19 Double 0 0 ,First,#,segment2,length,-1,-1z_start "z_start" true true false 19 Double 0 0 ,First,#,segment2,z_start,-1,-1;z_end "z_end" true true false 19 Double 0 0 ,First,#,segment2,z_end,-1,-1;Diameter_m "Diameter_m" true true false 19 Double 0 0 ,First,#,segment2,Diameter_m,-1,-1;slope "slope" true true false 19 Double 0 0 ,First,#,segment2,slope,-1,-1;acum10 "acum10" true true false 19 Double 0 0 ,Min,#,Fogne4,acum10,-1,-1;acum30 "acum30" true true false 19 Double 0 0 ,Min,#,Fogne4,acum30,-1,-1;acum50 "acum50" true true false 19 Double 0 0 ,Min,#,Fogne4,acum50,-1,-1;acum100 "acum100" true true false 19 Double 0 0 ,Min,#,Fogne4,acum100,-1,-1', match_option="INTERSECT", search_radius="", distance_field_name="")
 [arcpy.AddField_management(split2,field_name,"DOUBLE") for field_name in ['behav_10','behav_30','behav_50', 'behav_100', 'h_10', 'h_30', 'h_50', 'h_100']]
 arcpy.CalculateField_management(split2,"behav_10","[Q]-[acum10]")
 arcpy.CalculateField_management(split2,"behav_30","[Q]-[acum30]")

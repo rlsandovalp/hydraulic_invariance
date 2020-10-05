@@ -8,6 +8,7 @@ arcpy.ImportToolbox(arcpy.env.workspace+"\\..\\ExcelTools\\Excel and CSV Convers
 
 #Variables
 max_capaci = (arcpy.GetParameter(0)/100)
+duration = (arcpy.GetParameter(4)/60)
 
 #DEM, losses file and rain file of Lecco
 DEM = arcpy.env.workspace+"\\..\\Lombardy\\Lecco\\rasters\\dem\\DTM5_LC.img"
@@ -87,7 +88,7 @@ arcpy.Copy_management(arcpy.Describe(segments).catalogPath, segment2)
 # Create the areas and cut the areas to those of interest for the project
 arcpy.AddMessage("Creating areas ...")
 arcpy.CreateThiessenPolygons_analysis(nodes, thiessen, "ALL")
-arcpy.Clip_analysis (thiessen, limiti, clip_thiessen)
+arcpy.Clip_analysis(thiessen, limiti, clip_thiessen)
 
 # COMPUTING THE INFILTRATION INFORMATION
 # Intersect losses with the areas
@@ -138,11 +139,15 @@ arcpy.CalculateField_management(complete, "kappa", "[kappapoi_1] * [area]")
 # Dissolve the rain file
 arcpy.Dissolve_management(complete, complete_dissolve, dissolve_field="FID_losses", statistics_fields="CN MEAN;fo MEAN;fc MEAN;hor_exp MEAN;runoff_c MEAN;ks MEAN;ws MEAN;suc MEAN;a1 SUM;n1 SUM;alpha SUM;epsilon SUM;kappa SUM", multi_part="MULTI_PART", unsplit_lines="DISSOLVE_LINES")
 # Create fields in the table of rain
-[arcpy.AddField_management(complete_dissolve,field_name,"DOUBLE") for field_name in ['area', 'a1', 'n1', 'alpha', 'epsilon', 'kappa', 'w_10', 'a_10', 'pe_10', 'h_10','w_30', 'a_30', 'pe_30', 'h_30','w_50', 'a_50', 'pe_50', 'h_50', 'w_100', 'a_100', 'pe_100', 'h_100', 'CN', 'fo', 'fc', 'hor_exp', 'runoff_c', 'ks', 'ws', 'suc', 'S']]
+[arcpy.AddField_management(complete_dissolve,field_name,"DOUBLE") for field_name in ['duration', 'area', 'a1', 'n1', 'alpha', 'epsilon', 'kappa', 'w_10', 'a_10', 'pe_10', 'h_10','w_30', 'a_30', 'pe_30', 'h_30','w_50', 'a_50', 'pe_50', 'h_50', 'w_100', 'a_100', 'pe_100', 'h_100', 'CN', 'fo', 'fc', 'hor_exp', 'runoff_c', 'ks', 'ws', 'suc', 'S']]
 # Compute the fields created in the previous line
+arcpy.CalculateField_management(complete_dissolve,'duration',str(duration))
 arcpy.CalculateField_management(complete_dissolve,'area','!shape.area!','PYTHON')
 arcpy.CalculateField_management(complete_dissolve, "a1", "[SUM_a1] / [area]")
-arcpy.CalculateField_management(complete_dissolve, "n1", "[SUM_n1] / [area]")
+if duration<1:
+   arcpy.CalculateField_management(complete_dissolve, "n1", 0.5)
+else:
+   arcpy.CalculateField_management(complete_dissolve, "n1", "[SUM_n1] / [area]")
 arcpy.CalculateField_management(complete_dissolve, "alpha", "[SUM_alpha] / [area]")
 arcpy.CalculateField_management(complete_dissolve, "epsilon", "[SUM_epsilo] / [area]")
 arcpy.CalculateField_management(complete_dissolve, "kappa", "[SUM_kappa] / [area]")
@@ -156,19 +161,19 @@ arcpy.CalculateField_management(complete_dissolve, "ws", "[MEAN_ws] ")
 arcpy.CalculateField_management(complete_dissolve, "suc", "[MEAN_suc] ")
 arcpy.CalculateField_management(complete_dissolve, "S", " 25.4*(1000/[CN]-10) ")
 arcpy.CalculateField_management(complete_dissolve, "w_10", "[epsilon]+( [alpha] / [kappa] )*(1-(Log ( 10/(10-1) ))^ [kappa] )")
-arcpy.CalculateField_management(complete_dissolve, "a_10", "[w_10] * [a1]")
+arcpy.CalculateField_management(complete_dissolve, "a_10", "[w_10] * [a1] * [duration]^[n1]")
 arcpy.CalculateField_management(complete_dissolve, "pe_10", "(([a_10]-0.2*[S])^2)/([a_10]+0.8*[S])")
 arcpy.CalculateField_management(complete_dissolve, "h_10", "[pe_10]*[area] / 3600000")
 arcpy.CalculateField_management(complete_dissolve, "w_30", "[epsilon]+( [alpha] / [kappa] )*(1-(Log ( 30/(30-1) ))^ [kappa] )")
-arcpy.CalculateField_management(complete_dissolve, "a_30", "[w_30] * [a1]")
+arcpy.CalculateField_management(complete_dissolve, "a_30", "[w_30] * [a1] * [duration]^[n1]")
 arcpy.CalculateField_management(complete_dissolve, "pe_30", "(([a_30]-0.2*[S])^2)/([a_30]+0.8*[S])")
 arcpy.CalculateField_management(complete_dissolve, "h_30", "[pe_30]*[area] / 3600000")
 arcpy.CalculateField_management(complete_dissolve, "w_50", "[epsilon]+( [alpha] / [kappa] )*(1-(Log ( 50/(50-1) ))^ [kappa] )")
-arcpy.CalculateField_management(complete_dissolve, "a_50", "[w_50] * [a1]")
+arcpy.CalculateField_management(complete_dissolve, "a_50", "[w_50] * [a1] * [duration]^[n1]")
 arcpy.CalculateField_management(complete_dissolve, "pe_50", "(([a_50]-0.2*[S])^2)/([a_50]+0.8*[S])")
 arcpy.CalculateField_management(complete_dissolve, "h_50", "[pe_50]*[area] / 3600000")
 arcpy.CalculateField_management(complete_dissolve, "w_100", "[epsilon]+( [alpha] / [kappa] )*(1-(Log ( 100/(100-1) ))^ [kappa] )")
-arcpy.CalculateField_management(complete_dissolve, "a_100", "[w_100] * [a1]")
+arcpy.CalculateField_management(complete_dissolve, "a_100", "[w_100] * [a1] * [duration]^[n1]")
 arcpy.CalculateField_management(complete_dissolve, "pe_100", "(([a_100]-0.2*[S])^2)/([a_100]+0.8*[S])")
 arcpy.CalculateField_management(complete_dissolve, "h_100", "[pe_100]*[area] / 3600000")
 # Delete useless fields
@@ -194,7 +199,8 @@ arcpy.JoinField_management(segment2, "end", fogne3, "Node", fields="MEAN_Z")
 arcpy.CalculateField_management(segment2,'length','!shape.length!','PYTHON')
 arcpy.CalculateField_management(segment2,'z_start',"[MEAN_Z]")
 arcpy.CalculateField_management(segment2,'z_end',"[MEAN_Z_1]")
-arcpy.CalculateField_management(segment2, "slope", "([z_start]-[z_end])/[length]")
+cd_blk = """def pendiente(zs, ze, length):\n   pen=(zs-ze)/length\n   if pen<0.005:\n      hola = 0.005\n   else:\n      hola = pen\n   return hola"""
+arcpy.CalculateField_management(segment2, "slope", "pendiente( !z_start!, !z_end!, !length!)", "PYTHON_9.3", cd_blk)
 arcpy.CalculateField_management(segment2,'max_capaci',str(max_capaci))
 arcpy.CalculateField_management(segment2,'d',"[Diameter_m]*[max_capaci]")
 arcpy.CalculateField_management(segment2,"theta","2*math.acos(1 - 2*(!Diameter_m!*(1-!max_capaci!))/!Diameter_m!)",'PYTHON')

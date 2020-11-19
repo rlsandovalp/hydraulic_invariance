@@ -2,11 +2,11 @@ import arcpy
 import pandas as pd
 from arcpy import env
 
-arcpy.ImportToolbox(arcpy.env.workspace+"\\..\\ExcelTools\\Excel and CSV Conversion Tools")
+arcpy.ImportToolbox(arcpy.env.workspace+"\\Lecco\\Tools\\ExcelTools\\Excel and CSV Conversion Tools")
 #arcpy.ImportToolbox("C:/Users/rlsan/Downloads/Software/ExcelTools/Excel and CSV Conversion Tools")
 
 # DEM, nodes and segments
-DEM = arcpy.env.workspace+"\\..\\Lombardy\\Lecco\\rasters\\dem\\DTM5_LC.img"
+DEM = arcpy.env.workspace+"\\Lecco\\rasters\\lecco_dtm.img"
 nodes_csv = arcpy.env.workspace+"\\nodes.csv"
 segments_csv = arcpy.env.workspace+"\\segments.csv"
 

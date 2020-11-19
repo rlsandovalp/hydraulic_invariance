@@ -4,16 +4,16 @@ from arcpy import env
 import numpy as np
 import math
 
-arcpy.ImportToolbox(arcpy.env.workspace+"\\..\\ExcelTools\\Excel and CSV Conversion Tools")
+arcpy.ImportToolbox(arcpy.env.workspace+"\\Lecco\\Tools\\ExcelTools\\Excel and CSV Conversion Tools")
 
 #Variables
 max_capaci = (arcpy.GetParameter(0)/100)
 duration = (arcpy.GetParameter(4)/60)
 
 #DEM, losses file and rain file of Lecco
-DEM = arcpy.env.workspace+"\\..\\Lombardy\\Lecco\\rasters\\dem\\DTM5_LC.img"
-losses_file = arcpy.env.workspace+"\\..\\Lombardy\\Lecco\\Shapes\\losses.shp"
-rain_file = arcpy.env.workspace+"\\..\\Lombardy\\Lecco\\Shapes\\lspp_lecco.shp"
+DEM = arcpy.env.workspace+"\\Lecco\\rasters\\lecco_dtm.img"
+losses_file = arcpy.env.workspace+"\\Lecco\\Shapes\\infiltr.shp"
+rain_file = arcpy.env.workspace+"\\Lecco\\Shapes\\lspp_lecco.shp"
 
 # Input Files (Network, town limits)
 nodes = arcpy.GetParameter(1)
@@ -21,23 +21,23 @@ segments = arcpy.GetParameter(2)
 limiti = arcpy.GetParameter(3)
 
 # Processing files (sewers, areas)
-segment2 = arcpy.env.workspace+"\\shapes\\segment2.shp"
-fogne2 = arcpy.env.workspace+"\\shapes\\fogne2.shp"
-fogne3 = arcpy.env.workspace+"\\shapes\\fogne3.shp"
-split2 = arcpy.env.workspace+"\\shapes\\split2.shp"
-thiessen = arcpy.env.workspace+"\\shapes\\thiessen.shp"
-clip_thiessen = arcpy.env.workspace+"\\shapes\\clip_thiessen.shp"
+segment2 = arcpy.env.workspace+"\\Invarianza\\mappe\\segment2.shp"
+fogne2 = arcpy.env.workspace+"\\Invarianza\\mappe\\fogne2.shp"
+fogne3 = arcpy.env.workspace+"\\Invarianza\\mappe\\fogne3.shp"
+split2 = arcpy.env.workspace+"\\Invarianza\\mappe\\split2.shp"
+thiessen = arcpy.env.workspace+"\\Invarianza\\mappe\\thiessen.shp"
+clip_thiessen = arcpy.env.workspace+"\\Invarianza\\mappe\\clip_thiessen.shp"
 # Files with the infiltration and rain information
-losses = arcpy.env.workspace+"\\shapes\\losses.shp"
-losses_dissolve = arcpy.env.workspace+"\\shapes\\losses_Dissolve.shp"
-complete = arcpy.env.workspace+"\\shapes\\complete.shp"
-complete_dissolve = arcpy.env.workspace+"\\shapes\\complete_Dissolve.shp"
+losses = arcpy.env.workspace+"\\Invarianza\\mappe\\losses.shp"
+losses_dissolve = arcpy.env.workspace+"\\Invarianza\\mappe\\losses_Dissolve.shp"
+complete = arcpy.env.workspace+"\\Invarianza\\mappe\\complete.shp"
+complete_dissolve = arcpy.env.workspace+"\\Invarianza\\mappe\\complete_Dissolve.shp"
 # Files used in the accumulation of the flow
-nodes_csv = arcpy.env.workspace+"\\shapes\\nodes.csv"
-fogne3_csv = arcpy.env.workspace+"\\shapes\\fogne3.csv"
-segments_csv = arcpy.env.workspace+"\\shapes\\segments.csv"
-up_nodes = arcpy.env.workspace+"\\shapes\\upnodes.csv"
-table_csv = arcpy.env.workspace+"\\shapes\\upnodes_CSVToTable.dbf"
+nodes_csv = arcpy.env.workspace+"\\Invarianza\\mappe\\nodes.csv"
+fogne3_csv = arcpy.env.workspace+"\\Invarianza\\mappe\\fogne3.csv"
+segments_csv = arcpy.env.workspace+"\\Invarianza\\mappe\\segments.csv"
+up_nodes = arcpy.env.workspace+"\\Invarianza\\mappe\\upnodes.csv"
+table_csv = arcpy.env.workspace+"\\Invarianza\\mappe\\upnodes_CSVToTable.dbf"
 
 # Delete conflict files
 arcpy.AddMessage("Deleting old files ...")
@@ -280,7 +280,7 @@ arcpy.mapping.AddLayer(df,addLayer)
 
 # Add the information of the acumulated flow to the pipes and compare those values
 arcpy.AddMessage("Comparing the flow capacity of the pipes with the flow accumulated in the system ...")
-arcpy.SpatialJoin_analysis(target_features=segment2, join_features="Fogne4", out_feature_class=split2, join_operation="JOIN_ONE_TO_ONE", join_type="KEEP_ALL", field_mapping='Q "Q" true true false 19 Double 0 0 ,First,#,segment2,Q,-1,-1;Qr_Q "Qr_Q" true true false 19 Double 0 0 ,First,#,segment2,Qr_Q,-1,-1;length "length" true true false 19 Double 0 0 ,First,#,segment2,length,-1,-1z_start "z_start" true true false 19 Double 0 0 ,First,#,segment2,z_start,-1,-1;z_end "z_end" true true false 19 Double 0 0 ,First,#,segment2,z_end,-1,-1;Diameter_m "Diameter_m" true true false 19 Double 0 0 ,First,#,segment2,Diameter_m,-1,-1;slope "slope" true true false 19 Double 0 0 ,First,#,segment2,slope,-1,-1;acum10 "acum10" true true false 19 Double 0 0 ,Min,#,Fogne4,acum10,-1,-1;acum30 "acum30" true true false 19 Double 0 0 ,Min,#,Fogne4,acum30,-1,-1;acum50 "acum50" true true false 19 Double 0 0 ,Min,#,Fogne4,acum50,-1,-1;acum100 "acum100" true true false 19 Double 0 0 ,Min,#,Fogne4,acum100,-1,-1', match_option="INTERSECT", search_radius="", distance_field_name="")
+arcpy.SpatialJoin_analysis(target_features=segment2, join_features="Fogne4", out_feature_class=split2, join_operation="JOIN_ONE_TO_ONE", join_type="KEEP_ALL", field_mapping='Q "Q" true true false 19 Double 0 0 ,First,#,segment2,Q,-1,-1;Qr_Q "Qr_Q" true true false 19 Double 0 0 ,First,#,segment2,Qr_Q,-1,-1;length "length" true true false 19 Double 0 0 ,First,#,segment2,length,-1,-1;z_start "z_start" true true false 19 Double 0 0 ,First,#,segment2,z_start,-1,-1;z_end "z_end" true true false 19 Double 0 0 ,First,#,segment2,z_end,-1,-1;Diameter_m "Diameter_m" true true false 19 Double 0 0 ,First,#,segment2,Diameter_m,-1,-1;slope "slope" true true false 19 Double 0 0 ,First,#,segment2,slope,-1,-1;acum10 "acum10" true true false 19 Double 0 0 ,Min,#,Fogne4,acum10,-1,-1;acum30 "acum30" true true false 19 Double 0 0 ,Min,#,Fogne4,acum30,-1,-1;acum50 "acum50" true true false 19 Double 0 0 ,Min,#,Fogne4,acum50,-1,-1;acum100 "acum100" true true false 19 Double 0 0 ,Min,#,Fogne4,acum100,-1,-1', match_option="INTERSECT", search_radius="", distance_field_name="")
 [arcpy.AddField_management(split2,field_name,"DOUBLE") for field_name in ['behav_10','behav_30','behav_50', 'behav_100', 'h_10', 'h_30', 'h_50', 'h_100']]
 arcpy.CalculateField_management(split2,"behav_10","[Q]-[acum10]")
 arcpy.CalculateField_management(split2,"behav_30","[Q]-[acum30]")

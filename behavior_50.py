@@ -2,8 +2,8 @@ import arcpy
 from arcpy import env
 
 # Variables of the files and folders
-split2 = arcpy.env.workspace+"\\shapes\\split2.shp"
-symbology50 = arcpy.env.workspace+"\\..\\Lombardy\\General\\layers\\symbology50.lyr"
+split2 = arcpy.env.workspace+"\\Invarianza\\mappe\\split2.shp"
+symbology50 = arcpy.env.workspace+"\\Lecco\\layers\\symbology50.lyr"
 
 # Load the shapefile
 mxd = arcpy.mapping.MapDocument("current")

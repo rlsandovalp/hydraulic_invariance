@@ -8,8 +8,8 @@ arcpy.ImportToolbox(arcpy.env.workspace+"\\Lecco\\Tools\\ExcelTools\\Excel and C
 
 # Dfinit ubicaciones del DEM, nodes, segments, nodes_csv, segments_csv
 DEM = arcpy.env.workspace+"\\Lecco\\rasters\\lecco_dtm.img"
-nodes = arcpy.env.workspace+"\\Invarianza\\mappe\\nodes.shp"
-segments = arcpy.env.workspace+"\\Invarianza\\mappe\\segments.shp"
+nodes = arcpy.env.workspace+"\\..\\Invarianza\\mappe\\nodes.shp"
+segments = arcpy.env.workspace+"\\..\\Invarianza\\mappe\\segments.shp"
 nodes_csv = arcpy.env.workspace+"\\nodes.csv"
 segments_csv = arcpy.env.workspace+"\\segments.csv"
 

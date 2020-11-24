@@ -4,11 +4,14 @@ from arcpy import env
 import numpy as np
 import math
 
-arcpy.ImportToolbox(arcpy.env.workspace+"\\..\\..\\ExcelTools\\Excel and CSV Conversion Tools")
+arcpy.ImportToolbox(arcpy.env.workspace+"\\..\\Lecco\\Tools\\ExcelTools\\Excel and CSV Conversion Tools")
 
 #Variables
 max_capaci = (arcpy.GetParameter(0)/100)
 duration = (arcpy.GetParameter(4)/60)
+
+# max_capaci = 0.7
+# duration = 1
 
 #DEM, losses file and rain file of Lecco
 DEM = arcpy.env.workspace+"\\..\\Lecco\\rasters\\lecco_dtm.img"
@@ -19,6 +22,10 @@ rain_file = arcpy.env.workspace+"\\..\\Lecco\\Shapes\\lspp_lecco.shp"
 nodes = arcpy.GetParameter(1)
 segments = arcpy.GetParameter(2)
 limiti = arcpy.GetParameter(3)
+
+# nodes = arcpy.env.workspace+"\mappe\\nodes.shp"
+# segments = arcpy.env.workspace+"\\mappe\\segments.shp"
+# limiti = arcpy.env.workspace+"\\mappe\\limiti3.shp"
 
 # Processing files (sewers, areas)
 segment2 = arcpy.env.workspace+"\\mappe\\segment2.shp"
@@ -81,7 +88,6 @@ arcpy.Delete_management(nodes_csv)
 if len(trouble_pipes)>0:
    arcpy.AddWarning("The Following pipes have geometry troubles. Please correct the elevations in the 'nodes' shapefile or redraw the network in the 'NET' shapefile. Then run the Script2")
    arcpy.AddWarning(trouble_pipes)
-#   quit()
 
 arcpy.Copy_management(arcpy.Describe(segments).catalogPath, segment2)
 
@@ -100,9 +106,8 @@ arcpy.Intersect_analysis("'"+losses_file+"' #;'"+clip_thiessen+"' #", losses, jo
 arcpy.CalculateField_management(losses,'AREA','!shape.area!','PYTHON')
 arcpy.CalculateField_management(losses, "cn1", "[CN] * [area]")
 
-
 # Dissolve the losses file
-arcpy.Dissolve_management(losses, losses_dissolve, "FID_clip_t", "cn1 SUM", multi_part="MULTI_PART", unsplit_lines="DISSOLVE_LINES")
+arcpy.Dissolve_management(losses, losses_dissolve, "Input_FID", "cn1 SUM", multi_part="MULTI_PART", unsplit_lines="DISSOLVE_LINES")
 # Create fields in the table of losses
 [arcpy.AddField_management(losses_dissolve,field_name,"DOUBLE") for field_name in ['area', 'CN']]
 # Compute each one of the fields created in the previous line
@@ -110,6 +115,9 @@ arcpy.CalculateField_management(losses_dissolve,'AREA','!shape.area!','PYTHON')
 arcpy.CalculateField_management(losses_dissolve, "CN", "[SUM_cn1] / [area]")
 # Delete useless fields in the losses dissolve file
 arcpy.DeleteField_management(losses_dissolve, ["SUM_CN1"])
+
+
+
 
 # COMPUTING THE RAIN INFORMATION
 # Intersect rain with the areas

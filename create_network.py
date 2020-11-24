@@ -4,12 +4,12 @@ import pandas as pd
 from arcpy import env
 
 # Importar Toolbox
-arcpy.ImportToolbox(arcpy.env.workspace+"\\Lecco\\Tools\\ExcelTools\\Excel and CSV Conversion Tools")
+arcpy.ImportToolbox(arcpy.env.workspace+"\\..\\Lecco\\Tools\\ExcelTools\\Excel and CSV Conversion Tools")
 
 # Dfinit ubicaciones del DEM, nodes, segments, nodes_csv, segments_csv
-DEM = arcpy.env.workspace+"\\Lecco\\rasters\\lecco_dtm.img"
-nodes = arcpy.env.workspace+"\\..\\Invarianza\\mappe\\nodes.shp"
-segments = arcpy.env.workspace+"\\..\\Invarianza\\mappe\\segments.shp"
+DEM = arcpy.env.workspace+"\\..\\Lecco\\Rasters\\dem\\DTM5_LC.img"
+nodes = arcpy.env.workspace+"\mappe\\nodes.shp"
+segments = arcpy.env.workspace+"\\mappe\\segments.shp"
 nodes_csv = arcpy.env.workspace+"\\nodes.csv"
 segments_csv = arcpy.env.workspace+"\\segments.csv"
 
@@ -29,10 +29,12 @@ arcpy.FeatureVerticesToPoints_management(polyline, nodes, "ALL")
 arcpy.AddMessage("Adding X, Y , Z information to the sewers ...")
 arcpy.AddXY_management(nodes)
 arcpy.UpdateFeatureZ_3d(nodes, DEM, method="BILINEAR", status_field="")
+arcpy.DeleteField_management(nodes, ["ORIG_FID", "POINT_Z", "POINT_M", "Diameter_m", "Id"])
 arcpy.AddZInformation_3d(nodes, out_property="Z", noise_filtering="NO_FILTER")
-arcpy.DeleteField_management(nodes, ["ORIG_FID", "POINT_Z", "POINT_M", "Diameter_m"])
-arcpy.AddField_management(nodes,"point","double")
+[arcpy.AddField_management(nodes,field_name,"double") for field_name in ['point','node_up','node_dw']]
 arcpy.CalculateField_management(nodes,"point","[POINT_X] + [POINT_Y]")
+arcpy.CalculateField_management(nodes,"node_up","[FID]")
+arcpy.CalculateField_management(nodes,"node_dw","[FID]")
 
 # Create the pipes using the vertices of the network as the limits of each pipe. Then add initial and final node of each pipe.
 arcpy.AddMessage("Creating pipes ...")
@@ -70,8 +72,8 @@ arcpy.Delete_management(segments_csv)
 if len(trouble_pipes) == 0:
    arcpy.AddMessage("The Network was created and has no geometry problems. The Main script can be run now.") 
 elif len(trouble_pipes)>0:
-   arcpy.AddError("The Following pipes have geometry troubles. Please correct the elevations in the 'nodes' shapefile or redraw the network in the 'NET' shapefile. Then run the Script2")
-   arcpy.AddError(trouble_pipes)
+   arcpy.AddWarning("The Following pipes have geometry troubles. Please correct the elevations in the 'nodes' shapefile or redraw the network in the 'NET' shapefile. Then run the Script2")
+   arcpy.AddWarning(trouble_pipes)
 
 arcpy.Delete_management(nodes_csv)
 arcpy.Delete_management(segments_csv)
@@ -83,3 +85,10 @@ addLayer = arcpy.mapping.Layer(nodes)
 arcpy.mapping.AddLayer(df,addLayer)
 addLayer = arcpy.mapping.Layer(segments)
 arcpy.mapping.AddLayer(df,addLayer)
+
+
+arcpy.JoinField_management(segments, "start", nodes, "point", fields="node_up")
+arcpy.JoinField_management(segments, "end", nodes, "point", fields="node_dw")
+
+arcpy.DeleteField_management(segments, ["start", "end"])
+arcpy.DeleteField_management(nodes, "point")

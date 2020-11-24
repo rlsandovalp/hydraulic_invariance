@@ -14,7 +14,7 @@ duration = (arcpy.GetParameter(4)/60)
 # duration = 1
 
 #DEM, losses file and rain file of Lecco
-DEM = arcpy.env.workspace+"\\..\\Lecco\\rasters\\lecco_dtm.img"
+DEM = arcpy.env.workspace+"\\..\\Lecco\\Rasters\\dem\\DTM5_LC.img"
 losses_file = arcpy.env.workspace+"\\..\Lecco\\Shapes\\infiltr.shp"
 rain_file = arcpy.env.workspace+"\\..\\Lecco\\Shapes\\lspp_lecco.shp"
 
@@ -70,17 +70,10 @@ arcpy.TableToCSV_tableconversion(segments, segments_csv, "COMMA")
 df_nodes = pd.read_csv(nodes_csv)
 df_pipes = pd.read_csv(segments_csv)
 
-for i in range (len(df_nodes)):
-   df_nodes.iloc[i,5] = round(df_nodes.iloc[i,5],1)
-
-for i in range (len(df_pipes)):
-   df_pipes.iloc[i,2] = round(df_pipes.iloc[i,2],1)
-   df_pipes.iloc[i,3] = round(df_pipes.iloc[i,3],1)
-
 trouble_pipes = []
 for i in range (len(df_pipes)):
-   zini = (df_nodes[df_nodes['point'] == df_pipes.iloc[i,2]]['Z']).iloc[0]
-   zend = (df_nodes[df_nodes['point'] == df_pipes.iloc[i,3]]['Z']).iloc[0]
+   zini = (df_nodes[df_nodes['FID'] == df_pipes.iloc[i,2]]['Z']).iloc[0]
+   zend = (df_nodes[df_nodes['FID'] == df_pipes.iloc[i,3]]['Z']).iloc[0]
    if zini<=zend:
       trouble_pipes.append(df_pipes.iloc[i,0])
 arcpy.Delete_management(segments_csv)
@@ -108,15 +101,13 @@ arcpy.CalculateField_management(losses, "cn1", "[CN] * [area]")
 
 # Dissolve the losses file
 arcpy.Dissolve_management(losses, losses_dissolve, "Input_FID", "cn1 SUM", multi_part="MULTI_PART", unsplit_lines="DISSOLVE_LINES")
-# Create fields in the table of losses
+# Create fields in the table of losses dissolve
 [arcpy.AddField_management(losses_dissolve,field_name,"DOUBLE") for field_name in ['area', 'CN']]
 # Compute each one of the fields created in the previous line
 arcpy.CalculateField_management(losses_dissolve,'AREA','!shape.area!','PYTHON')
 arcpy.CalculateField_management(losses_dissolve, "CN", "[SUM_cn1] / [area]")
 # Delete useless fields in the losses dissolve file
 arcpy.DeleteField_management(losses_dissolve, ["SUM_CN1"])
-
-
 
 
 # COMPUTING THE RAIN INFORMATION
@@ -133,7 +124,7 @@ arcpy.CalculateField_management(complete, "alpha", "[alphpoint_] * [area]")
 arcpy.CalculateField_management(complete, "epsilon", "[epsipoint_] * [area]")
 arcpy.CalculateField_management(complete, "kappa", "[kappapoi_1] * [area]")
 # Dissolve the rain file
-arcpy.Dissolve_management(complete, complete_dissolve, dissolve_field="FID_losses", statistics_fields="CN MEAN;a1 SUM;n1 SUM;alpha SUM;epsilon SUM;kappa SUM", multi_part="MULTI_PART", unsplit_lines="DISSOLVE_LINES")
+arcpy.Dissolve_management(complete, complete_dissolve, dissolve_field="INPUT_FID", statistics_fields="CN MEAN;a1 SUM;n1 SUM;alpha SUM;epsilon SUM;kappa SUM", multi_part="MULTI_PART", unsplit_lines="DISSOLVE_LINES")
 # Create fields in the table of rain
 [arcpy.AddField_management(complete_dissolve,field_name,"DOUBLE") for field_name in ['duration', 'area', 'a1', 'n1', 'alpha', 'epsilon', 'kappa', 'w_10', 'a_10', 'pe_10', 'h_10','w_30', 'a_30', 'pe_30', 'h_30','w_50', 'a_50', 'pe_50', 'h_50', 'w_100', 'a_100', 'pe_100', 'h_100', 'CN','S']]
 # Compute the fields created in the previous line
@@ -166,28 +157,29 @@ arcpy.CalculateField_management(complete_dissolve, "a_100", "[w_100] * [a1] * [d
 arcpy.CalculateField_management(complete_dissolve, "pe_100", "(([a_100]-0.2*[S])^2)/([a_100]+0.8*[S])")
 arcpy.CalculateField_management(complete_dissolve, "h_100", "[pe_100]*[area] / (1000*[duration]*60*60)")
 # Delete useless fields
-arcpy.DeleteField_management(complete_dissolve, ["SUM_a1", "SUM_n1", "SUM_alpha", "SUM_epsilo", "SUM_kappa", "FID_losses"])
+arcpy.DeleteField_management(complete_dissolve, ["SUM_a1", "SUM_n1", "SUM_alpha", "SUM_epsilo", "SUM_kappa","MEAN_CN"])
 
 
 # Move the information of the areas to the sewers
 arcpy.AddMessage("Transfering areas information to the sewers ...")
-field_map = 'POINT_Y "POINT_Y" true true false 19 Double 0 0 ,First,#,'+str(nodes)+',POINT_Y,-1,-1;POINT_X "POINT_X" true true false 19 Double 0 0 ,First,#,'+str(nodes)+',POINT_X,-1,-1;Z "Z" true true false 19 Double 0 0 ,First,#,'+str(nodes)+',Z,-1,-1;h_10 "h_10" true true false 19 Double 0 0 ,First,#,'+complete_dissolve+',h_10,-1,-1;h_30 "h_30" true true false 19 Double 0 0 ,First,#,'+complete_dissolve+',h_30,-1,-1;h_50 "h_50" true true false 19 Double 0 0 ,First,#,'+complete_dissolve+',h_50,-1,-1;h_100 "h_100" true true false 19 Double 0 0 ,First,#,'+complete_dissolve+',h_100,-1,-1'
+field_map = 'Node "Input_FID" true true false 19 Double 0 0 ,First,#,'+complete_dissolve+',Input_FID,-1,-1;X "POINT_X" true true false 19 Double 0 0 ,First,#,'+str(nodes)+',POINT_X,-1,-1;Y "POINT_Y" true true false 19 Double 0 0 ,First,#,'+str(nodes)+',POINT_Y,-1,-1;Z "Z" true true false 19 Double 0 0 ,First,#,'+str(nodes)+',Z,-1,-1;h_10 "h_10" true true false 19 Double 0 0 ,First,#,'+complete_dissolve+',h_10,-1,-1;h_30 "h_30" true true false 19 Double 0 0 ,First,#,'+complete_dissolve+',h_30,-1,-1;h_50 "h_50" true true false 19 Double 0 0 ,First,#,'+complete_dissolve+',h_50,-1,-1;h_100 "h_100" true true false 19 Double 0 0 ,First,#,'+complete_dissolve+',h_100,-1,-1'
 arcpy.SpatialJoin_analysis(nodes, complete_dissolve, fogne2, join_operation="JOIN_ONE_TO_ONE", join_type="KEEP_ALL", field_mapping=field_map, match_option="INTERSECT", search_radius="", distance_field_name="")
+arcpy.DeleteField_management(fogne2, ["Join_Count", "TARGET_FID"])
+
 
 # Delete overlay nodes to have only one node per spatial location
-arcpy.Dissolve_management(fogne2, fogne3, dissolve_field="POINT_Y;POINT_X", statistics_fields="Z MEAN;h_10 MEAN;h_30 MEAN;h_50 MEAN;h_100 MEAN", multi_part="MULTI_PART", unsplit_lines="DISSOLVE_LINES")
-[arcpy.AddField_management(fogne3,field_name,"DOUBLE") for field_name in ['Node', 'Acum10', 'Acum30', 'Acum50', 'Acum100']]
-arcpy.CalculateField_management(fogne3, "Node", "[POINT_X]+[POINT_Y]")
+arcpy.Dissolve_management(fogne2, fogne3, dissolve_field="Node", statistics_fields="X MEAN; Y MEAN; Z MEAN;h_10 MEAN;h_30 MEAN;h_50 MEAN;h_100 MEAN", multi_part="MULTI_PART", unsplit_lines="DISSOLVE_LINES")
+[arcpy.AddField_management(fogne3,field_name,"DOUBLE") for field_name in ['Acum10', 'Acum30', 'Acum50', 'Acum100']]
 
 # Compute maximum capacity of the pipes adding Z information
 arcpy.AddMessage("Computing capacity of the pipes ...")
 # Add required fields
-[arcpy.AddField_management(segment2,field_name,"DOUBLE") for field_name in ['z_start','z_end','slope', 'length', 'max_capaci', 'd', 'theta', 'A', 'Rh', 'ks', 'Q', 'Qr_Q']]
-arcpy.JoinField_management(segment2, "start", fogne3, "Node", fields="MEAN_Z")
-arcpy.JoinField_management(segment2, "end", fogne3, "Node", fields="MEAN_Z")
+[arcpy.AddField_management(segment2,field_name,"DOUBLE") for field_name in ['z_start','z_end', 'length', 'slope', 'max_capaci', 'd', 'theta', 'A', 'Rh', 'ks', 'Q', 'Qr_Q']]
+arcpy.JoinField_management(segment2, "node_up", fogne2, "FID", fields="Z")
+arcpy.JoinField_management(segment2, "node_dw", fogne2, "FID", fields="Z")
+arcpy.CalculateField_management(segment2,'z_start',"[Z]")
+arcpy.CalculateField_management(segment2,'z_end',"[Z_1]")
 arcpy.CalculateField_management(segment2,'length','!shape.length!','PYTHON')
-arcpy.CalculateField_management(segment2,'z_start',"[MEAN_Z]")
-arcpy.CalculateField_management(segment2,'z_end',"[MEAN_Z_1]")
 cd_blk = """def pendiente(zs, ze, length):\n   pen=(zs-ze)/length\n   if pen<0.005:\n      hola = 0.005\n   else:\n      hola = pen\n   return hola"""
 arcpy.CalculateField_management(segment2, "slope", "pendiente( !z_start!, !z_end!, !length!)", "PYTHON_9.3", cd_blk)
 arcpy.CalculateField_management(segment2,'max_capaci',str(max_capaci))
@@ -199,8 +191,14 @@ arcpy.CalculateField_management(segment2,"ks","75")
 arcpy.CalculateField_management(segment2,"Q","!A!*!ks!*!Rh!**(2./3)*math.sqrt(!slope!)",'PYTHON')
 arcpy.CalculateField_management(segment2,"Qr_Q","1./(!ks!*math.sqrt(!slope!)*(!Diameter_m!**(8./3)))",'PYTHON')
 
+# Update nodes names
+arcpy.JoinField_management(segment2, "node_up", fogne2, "FID", fields="Node")
+arcpy.JoinField_management(segment2, "node_dw", fogne2, "FID", fields="Node")
+arcpy.CalculateField_management(segment2,'node_up',"[Node]")
+arcpy.CalculateField_management(segment2,'node_dw',"[Node_1]")
+
 # Delete useless fields
-arcpy.DeleteField_management(segment2, ["MEAN_Z", "MEAN_Z_1"])
+arcpy.DeleteField_management(segment2, ["Z", "Z_1", "Node", "Node_1"])
 
 # Accumulate the flow in the network
 arcpy.AddMessage("Accumulating the flow ...")
@@ -209,13 +207,6 @@ arcpy.TableToCSV_tableconversion(segment2, segments_csv, "COMMA")
 df_nodes = pd.read_csv(nodes_csv)
 df_pipes = pd.read_csv(segments_csv)
 df_nodes = df_nodes.sort_values(by=['MEAN_Z'], ascending=False)
-
-for i in range (len(df_nodes)):
-   df_nodes.iloc[i,8] = round(df_nodes.iloc[i,8],1)
-
-for i in range (len(df_pipes)):
-   df_pipes.iloc[i,2] = round(df_pipes.iloc[i,2],1)
-   df_pipes.iloc[i,3] = round(df_pipes.iloc[i,3],1)
 
 for i in range(len(df_pipes)):
    ni = df_pipes.iloc[i,2]
@@ -228,11 +219,11 @@ for i in range(len(df_pipes)):
 df_nodes = df_nodes.sort_values(by=['MEAN_Z'], ascending=False)
 
 for i in range(len(df_nodes)):
-   acum10 = df_nodes.iloc[i,4]
-   acum30 = df_nodes.iloc[i,5]
-   acum50 = df_nodes.iloc[i,6]
-   acum100 = df_nodes.iloc[i,7]
-   inputs_df = df_pipes[df_pipes['end'] == df_nodes.iloc[i,8]]['start']
+   acum10 = df_nodes.iloc[i,5]
+   acum30 = df_nodes.iloc[i,6]
+   acum50 = df_nodes.iloc[i,7]
+   acum100 = df_nodes.iloc[i,8]
+   inputs_df = df_pipes[df_pipes['node_dw'] == df_nodes.iloc[i,1]]['node_up']
    algo10 = 0
    algo30 = 0
    algo50 = 0
@@ -267,7 +258,7 @@ df_nodes.to_csv(up_nodes)
 # Load the information of the CSV file into the table of contents
 arcpy.CSVToTable_tableconversion(up_nodes, table_csv, "COMMA")
 spRef = arcpy.Describe(segments).spatialReference
-arcpy.MakeXYEventLayer_management(table_csv, "point_x", "point_y", "Fogne4", spRef, "mean_z")
+arcpy.MakeXYEventLayer_management(table_csv, "mean_x", "mean_y", "Fogne4", spRef, "mean_z")
 
 mxd = arcpy.mapping.MapDocument("current")
 df = arcpy.mapping.ListDataFrames(mxd)[0]

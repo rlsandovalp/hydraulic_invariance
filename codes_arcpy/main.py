@@ -4,7 +4,7 @@ from arcpy import env
 import numpy as np
 import math
 
-arcpy.ImportToolbox(arcpy.env.workspace+"\\..\\Lecco\\Tools\\ExcelTools\\Excel and CSV Conversion Tools")
+arcpy.ImportToolbox(arcpy.env.workspace+"\\Lecco\\Tools\\ExcelTools\\Excel and CSV Conversion Tools")
 
 #Variables
 max_capaci = (arcpy.GetParameter(0)/100)
@@ -14,9 +14,9 @@ duration = (arcpy.GetParameter(4)/60)
 # duration = 1
 
 #DEM, losses file and rain file of Lecco
-DEM = arcpy.env.workspace+"\\..\\Lecco\\Rasters\\dem\\DTM5_LC.img"
-losses_file = arcpy.env.workspace+"\\..\Lecco\\Shapes\\infiltr.shp"
-rain_file = arcpy.env.workspace+"\\..\\Lecco\\Shapes\\lspp_lecco.shp"
+DEM = arcpy.env.workspace+"\\..\\Lecco\\rasters\\lecco_dem.img"
+losses_file = arcpy.env.workspace+"\\Lecco\\Shapes\\infiltr.shp"
+rain_file = arcpy.env.workspace+"\\Lecco\\Shapes\\lspp_lecco.shp"
 
 # Input Files (Network, town limits)
 nodes = arcpy.GetParameter(1)
@@ -28,23 +28,23 @@ limiti = arcpy.GetParameter(3)
 # limiti = arcpy.env.workspace+"\\mappe\\limiti3.shp"
 
 # Processing files (sewers, areas)
-segment2 = arcpy.env.workspace+"\\mappe\\segment2.shp"
-fogne2 = arcpy.env.workspace+"\\mappe\\fogne2.shp"
-fogne3 = arcpy.env.workspace+"\\mappe\\fogne3.shp"
-split2 = arcpy.env.workspace+"\\mappe\\split2.shp"
-thiessen = arcpy.env.workspace+"\\mappe\\thiessen.shp"
-clip_thiessen = arcpy.env.workspace+"\\mappe\\clip_thiessen.shp"
+segment2 = arcpy.env.workspace+"\\Invarianza\\mappe\\segment2.shp"
+fogne2 = arcpy.env.workspace+"\\Invarianza\\mappe\\fogne2.shp"
+fogne3 = arcpy.env.workspace+"\\Invarianza\\mappe\\fogne3.shp"
+split2 = arcpy.env.workspace+"\\Invarianza\\mappe\\split2.shp"
+thiessen = arcpy.env.workspace+"\\Invarianza\\mappe\\thiessen.shp"
+clip_thiessen = arcpy.env.workspace+"\\Invarianza\\mappe\\clip_thiessen.shp"
 # Files with the infiltration and rain information
-losses = arcpy.env.workspace+"\\mappe\\losses.shp"
-losses_dissolve = arcpy.env.workspace+"\\mappe\\losses_Dissolve.shp"
-complete = arcpy.env.workspace+"\\mappe\\complete.shp"
-complete_dissolve = arcpy.env.workspace+"\\mappe\\complete_Dissolve.shp"
+losses = arcpy.env.workspace+"\\Invarianza\\mappe\\losses.shp"
+losses_dissolve = arcpy.env.workspace+"\\Invarianza\\mappe\\losses_Dissolve.shp"
+complete = arcpy.env.workspace+"\\Invarianza\\mappe\\complete.shp"
+complete_dissolve = arcpy.env.workspace+"\\Invarianza\\mappe\\complete_Dissolve.shp"
 # Files used in the accumulation of the flow
-nodes_csv = arcpy.env.workspace+"\\mappe\\nodes.csv"
-fogne3_csv = arcpy.env.workspace+"\\mappe\\fogne3.csv"
-segments_csv = arcpy.env.workspace+"\\mappe\\segments.csv"
-up_nodes = arcpy.env.workspace+"\\mappe\\upnodes.csv"
-table_csv = arcpy.env.workspace+"\\mappe\\upnodes_CSVToTable.dbf"
+nodes_csv = arcpy.env.workspace+"\\Invarianza\\mappe\\nodes.csv"
+fogne3_csv = arcpy.env.workspace+"\\Invarianza\\mappe\\fogne3.csv"
+segments_csv = arcpy.env.workspace+"\\Invarianza\\mappe\\segments.csv"
+up_nodes = arcpy.env.workspace+"\\Invarianza\\mappe\\upnodes.csv"
+table_csv = arcpy.env.workspace+"\\Invarianza\\mappe\\upnodes_CSVToTable.dbf"
 
 # Delete conflict files
 arcpy.AddMessage("Deleting old files ...")
@@ -126,7 +126,7 @@ arcpy.CalculateField_management(complete, "kappa", "[kappapoi_1] * [area]")
 # Dissolve the rain file
 arcpy.Dissolve_management(complete, complete_dissolve, dissolve_field="INPUT_FID", statistics_fields="CN MEAN;a1 SUM;n1 SUM;alpha SUM;epsilon SUM;kappa SUM", multi_part="MULTI_PART", unsplit_lines="DISSOLVE_LINES")
 # Create fields in the table of rain
-[arcpy.AddField_management(complete_dissolve,field_name,"DOUBLE") for field_name in ['duration', 'area', 'a1', 'n1', 'alpha', 'epsilon', 'kappa', 'w_10', 'a_10', 'pe_10', 'h_10','w_30', 'a_30', 'pe_30', 'h_30','w_50', 'a_50', 'pe_50', 'h_50', 'w_100', 'a_100', 'pe_100', 'h_100', 'CN','S']]
+[arcpy.AddField_management(complete_dissolve,field_name,"DOUBLE") for field_name in ['duration', 'area', 'a1', 'n1', 'alpha', 'epsilon', 'kappa', 'w_10', 'a_10', 'pe_10', 'h_10','w_30', 'a_30', 'pe_30', 'h_30','w_50', 'a_50', 'pe_50', 'h_50', 'w_100', 'a_100', 'pe_100', 'h_100', 'CN','S','i_10','i_50']]
 # Compute the fields created in the previous line
 arcpy.CalculateField_management(complete_dissolve,'duration',str(duration))
 arcpy.CalculateField_management(complete_dissolve,'area','!shape.area!','PYTHON')
@@ -156,6 +156,9 @@ arcpy.CalculateField_management(complete_dissolve, "w_100", "[epsilon]+( [alpha]
 arcpy.CalculateField_management(complete_dissolve, "a_100", "[w_100] * [a1] * [duration]^[n1]")
 arcpy.CalculateField_management(complete_dissolve, "pe_100", "(([a_100]-0.2*[S])^2)/([a_100]+0.8*[S])")
 arcpy.CalculateField_management(complete_dissolve, "h_100", "[pe_100]*[area] / (1000*[duration]*60*60)")
+arcpy.CalculateField_management(complete_dissolve, "i_10", "[a_10]*[duration]^([n1]-1)")
+arcpy.CalculateField_management(complete_dissolve, "i_50", "[a_50]*[duration]^([n1]-1)")
+
 # Delete useless fields
 arcpy.DeleteField_management(complete_dissolve, ["SUM_a1", "SUM_n1", "SUM_alpha", "SUM_epsilo", "SUM_kappa","MEAN_CN"])
 

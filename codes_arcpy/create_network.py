@@ -5,10 +5,11 @@ from arcpy import env
 
 # Importar Toolbox
 arcpy.ImportToolbox(arcpy.env.workspace+"\\..\\Lecco\\Tools\\ExcelTools\\Excel and CSV Conversion Tools")
+arcpy.ImportToolbox(arcpy.env.workspace+"\\Lecco\\Tools\\ExcelTools\\Excel and CSV Conversion Tools")
 
 # Dfinit ubicaciones del DEM, nodes, segments, nodes_csv, segments_csv
-DEM = arcpy.env.workspace+"\\..\\Lecco\\Rasters\\dem\\DTM5_LC.img"
-nodes = arcpy.env.workspace+"\mappe\\nodes.shp"
+DEM = arcpy.env.workspace+"\\..\\Lecco\\rasters\\lecco_dtm.img"
+nodes = arcpy.env.workspace+"\\mappe\\nodes.shp"
 segments = arcpy.env.workspace+"\\mappe\\segments.shp"
 nodes_csv = arcpy.env.workspace+"\\nodes.csv"
 segments_csv = arcpy.env.workspace+"\\segments.csv"
@@ -20,7 +21,8 @@ arcpy.Delete_management(segments)
 
 # -Read Input Files from those selected in the visual screen [Network, analysis limits]
 polyline = arcpy.GetParameter(0)
-# polyline = arcpy.env.workspace+"\\..\\Lecco\\Shapes\\NET.shp"
+# polyline = arcpy.env.workspace+"\\Lecco\\Shapes\\NET.shp"
+
 
 # Create the sewers in the polyline vertices
 arcpy.AddMessage("Creating sewers ...")

@@ -1,9 +1,0 @@
-Basic File
-
-a
-b
-c
-d
-e
-
-Está funcionando Dios mio!!!

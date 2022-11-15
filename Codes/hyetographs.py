@@ -83,9 +83,9 @@ $$
 ## LSPP parameters
 a1 = st.sidebar.number_input('a1', 20.0, 40.0, 30.0)
 n = st.sidebar.number_input('n', 0.1, 0.6, 0.3)
-alpha = st.sidebar.number_input(r"$\alpha$", 0.1, 0.6, 0.3)
-epsilon = st.sidebar.number_input(r'\varepsilon', 0.2, 1.1, 0.8)
-kappa = st.sidebar.number_input(r'\varepsilon', -1.0, 1.0, -0.001)
+alpha = st.sidebar.number_input("Alpha", 0.1, 0.6, 0.3)
+epsilon = st.sidebar.number_input('Epsilon', 0.2, 1.1, 0.8)
+kappa = st.sidebar.number_input('Kappa', -1.0, 1.0, -0.001)
 
 
 ### rain duration [hours], interval of hyetograph [min], position of the peak [0,1], and return period [years]
@@ -128,27 +128,26 @@ st.pyplot(plot_chicago())
 
 df = pd.DataFrame(chicago, columns = ['Time [min]', 'h[mm]'])
 
-aa = df.to_csv().encode('utf-8')
+chicago_hyetograph = df.to_csv().encode('utf-8')
 
 st.download_button(
-    label="Download data as CSV",
-    data=aa,
-    file_name='large_df.csv',
-    mime='text/csv',
+    label = "Download Chicago",
+    data = chicago_hyetograph,
+    file_name = 'Chicago.csv',
+    mime = 'text/csv',
 )
 
 st.write('Total rain depth Uniform: ' + str(round(np.sum(uniform[:,1]), 2)) + ' mm')
 
 st.pyplot(plot_uniform())
 
-
 dfb = pd.DataFrame(chicago, columns = ['Time [min]', 'h[mm]'])
 
-aab = df.to_csv().encode('utf-8')
+uniform_hyetograph = df.to_csv().encode('utf-8')
 
 st.download_button(
-    label="Download data as CSV",
-    data=aab,
-    file_name='large_df.csv',
-    mime='text/csv',
+    label = "Download Uniform",
+    data = uniform_hyetograph,
+    file_name = 'Uniform.csv',
+    mime = 'text/csv',
 )

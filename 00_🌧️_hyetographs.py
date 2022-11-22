@@ -35,16 +35,7 @@ def plot_uniform():
     ax.set_ylabel('Rain depth [mm]')
     return fig
 
-def plot_LSPP(controlContainer):
-    global epsilon, a1, n, alpha, kappa
-    with controlContainer:
-            # st.markdown("<br>"*3,unsafe_allow_html=True)
-            with st.expander("LSPP parameters:",expanded=True):
-                a1 = st.number_input('a1', 20.0, 40.0, 30.0)
-                n = st.number_input('n', 0.1, 0.6, 0.3)
-                alpha = st.number_input("Alpha", 0.1, 0.6, 0.3)
-                epsilon = st.number_input('Epsilon', 0.2, 1.1, 0.8)
-                kappa = st.number_input('Kappa', -1.0, 1.0, -0.001, format = '%f')
+def plot_LSPP():
     fig, ax = plt.subplots(figsize = (5,3))
     x = np.linspace(0,5,100)
     Tr = [10,50,100]
@@ -129,8 +120,14 @@ r'''
 '''
 col1, col2 = st.columns([1,2.5])
 
+with col1:
+    a1 = st.number_input('a1', 20.0, 40.0, 30.0)
+    n = st.number_input('n', 0.1, 0.6, 0.3)
+    alpha = st.number_input("Alpha", 0.1, 0.6, 0.3)
+    epsilon = st.number_input('Epsilon', 0.2, 1.1, 0.8)
+    kappa = st.number_input('Kappa', -1.0, 1.0, -0.001, format = '%f')
 with col2:
-    st.pyplot(plot_LSPP(col1),use_container_width=True)
+    st.pyplot(plot_LSPP())
 
 
 ### Compute rain duration, total rain depth, and time to the peak 

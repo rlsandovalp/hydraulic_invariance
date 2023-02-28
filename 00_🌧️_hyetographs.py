@@ -162,7 +162,7 @@ chicago_hyetograph = df.to_csv(sep = ' ', index = False, header = False).encode(
 st.download_button(
     label = "Download Chicago",
     data = chicago_hyetograph,
-    file_name = 'Chicago_'+str(Tr)+'.dat',
+    file_name = 'RG_Chicago_'+str(Tr)+'.dat',
     mime = 'text/csv',
 )
 
@@ -181,7 +181,7 @@ uniform_hyetograph = df_u.to_csv(sep = ' ', index = False, header = False).encod
 st.download_button(
     label = "Download Uniform",
     data = uniform_hyetograph,
-    file_name = 'Uniform_'+str(Tr)+'.dat',
+    file_name = 'RG_Uniform_'+str(Tr)+'.dat',
     mime = 'text/csv',
 )
 

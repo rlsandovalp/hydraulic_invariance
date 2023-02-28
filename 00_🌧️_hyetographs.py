@@ -95,19 +95,6 @@ h(t) = H(t+\Delta t) - H(t)
 $$
 '''
 
-## LSPP parameters
-
-# cols = st.columns(3)
-
-# with cols[0]:
-#     a1 = st.number_input('a1', 20.0, 40.0, 30.0)
-#     n = st.number_input('n', 0.1, 0.6, 0.3)
-# with cols[1]:
-#     alpha = st.number_input("Alpha", 0.1, 0.6, 0.3)
-#     epsilon = st.number_input('Epsilon', 0.2, 1.1, 0.8)
-# with cols[2]:
-#     kappa = st.number_input('Kappa', -1.0, 1.0, -0.001, format = '%f')
-
 
 ### rain duration [hours], interval of hyetograph [min], position of the peak [0,1], and return period [years]
 duration_h = st.sidebar.number_input('Rain Duration [Hours]', 0.2, 6.0, 1.0)
@@ -165,14 +152,17 @@ st.write('Total rain depth Chicago: ' + str(round(np.sum(chicago[:,1]), 2)) + ' 
 
 st.pyplot(plot_chicago())
 
+dates = ['07/09/2020']*13
+hours = ['01:00','01:05','01:10','01:15','01:20','01:25','01:30','01:35','01:40','01:45','01:50','01:55','02:00']
+
 df = pd.DataFrame(chicago, columns = ['Time [min]', 'h[mm]'])
 
-chicago_hyetograph = df.to_csv().encode('utf-8')
+chicago_hyetograph = df.to_csv().encode('utf-8', sep = '	', index = False, header = False)
 
 st.download_button(
     label = "Download Chicago",
     data = chicago_hyetograph,
-    file_name = 'Chicago.csv',
+    file_name = 'Chicago_'+str(Tr)+'.dat',
     mime = 'text/csv',
 )
 
@@ -186,12 +176,12 @@ st.pyplot(plot_uniform())
 
 dfb = pd.DataFrame(chicago, columns = ['Time [min]', 'h[mm]'])
 
-uniform_hyetograph = df.to_csv().encode('utf-8')
+uniform_hyetograph = df.to_csv().encode('utf-8', sep = '	', index = False, header = False)
 
 st.download_button(
     label = "Download Uniform",
     data = uniform_hyetograph,
-    file_name = 'Uniform.csv',
+    file_name = 'Uniform'+str(Tr)+'.csv',
     mime = 'text/csv',
 )
 

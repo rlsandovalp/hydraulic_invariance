@@ -157,7 +157,7 @@ hours = ['01:00','01:05','01:10','01:15','01:20','01:25','01:30','01:35','01:40'
 
 df = pd.DataFrame(chicago, columns = ['Time [min]', 'h[mm]'])
 
-chicago_hyetograph = df.to_csv().encode('utf-8', sep = '	', index = False, header = False)
+chicago_hyetograph = df.to_csv().encode('utf-8', sep = ' ', index = False, header = False)
 
 st.download_button(
     label = "Download Chicago",
@@ -176,7 +176,7 @@ st.pyplot(plot_uniform())
 
 dfb = pd.DataFrame(chicago, columns = ['Time [min]', 'h[mm]'])
 
-uniform_hyetograph = df.to_csv().encode('utf-8', sep = '	', index = False, header = False)
+uniform_hyetograph = df.to_csv().encode('utf-8', sep = ' ', index = False, header = False)
 
 st.download_button(
     label = "Download Uniform",

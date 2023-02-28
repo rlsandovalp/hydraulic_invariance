@@ -174,9 +174,9 @@ st.write('Total rain depth Uniform: ' + str(round(np.sum(uniform[:-1,1]), 2)) + 
 
 st.pyplot(plot_uniform())
 
-dfb = pd.DataFrame(chicago, columns = ['Time [min]', 'h[mm]'])
+df_u = pd.DataFrame(np.transpose([dates, hours, uniform[:,1]]))
 
-uniform_hyetograph = df.to_csv(sep = ' ', index = False, header = False).encode('utf-8')
+uniform_hyetograph = df_u.to_csv(sep = ' ', index = False, header = False).encode('utf-8')
 
 st.download_button(
     label = "Download Uniform",

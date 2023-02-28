@@ -181,7 +181,7 @@ uniform_hyetograph = df.to_csv(sep = ' ', index = False, header = False).encode(
 st.download_button(
     label = "Download Uniform",
     data = uniform_hyetograph,
-    file_name = 'Uniform'+str(Tr)+'.csv',
+    file_name = 'Uniform_'+str(Tr)+'.dat',
     mime = 'text/csv',
 )
 

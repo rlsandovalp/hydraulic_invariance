@@ -155,7 +155,7 @@ st.pyplot(plot_chicago())
 dates = ['07/09/2020']*13
 hours = ['01:00','01:05','01:10','01:15','01:20','01:25','01:30','01:35','01:40','01:45','01:50','01:55','02:00']
 
-df = pd.DataFrame(chicago, columns = ['Time [min]', 'h[mm]'])
+df = pd.DataFrame([dates, hours, chicago[:,1]])
 
 chicago_hyetograph = df.to_csv(sep = ' ', index = False, header = False).encode('utf-8')
 

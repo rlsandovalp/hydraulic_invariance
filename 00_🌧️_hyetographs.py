@@ -109,10 +109,10 @@ col1, col2 = st.columns([1,2.5])
 
 with col1:
     a1 = st.number_input('a1', 20.00, 40.00, 30.00)
-    n = st.number_input('n', 0.1, 0.6, 0.3)
-    alpha = st.number_input("Alpha", 0.1, 0.6, 0.3)
-    epsilon = st.number_input('Epsilon', 0.2, 1.1, 0.8)
-    kappa = st.number_input('Kappa', -1.0, 1.0, -0.001, format = '%f')
+    n = st.number_input('n', 0.10, 0.60, 0.30)
+    alpha = st.number_input("Alpha", 0.10, 0.60, 0.30)
+    epsilon = st.number_input('Epsilon', 0.20, 1.10, 0.80)
+    kappa = st.number_input('Kappa', -1.0000, 1.0000, -0.0010, format = '%f')
 with col2:
     st.pyplot(plot_LSPP())
 

@@ -108,7 +108,7 @@ r'''
 col1, col2 = st.columns([1,2.5])
 
 with col1:
-    a1 = st.number_input('a1', 20.0, 40.0, 30.0)
+    a1 = st.number_input('a1', 20.00, 40.00, 30.00)
     n = st.number_input('n', 0.1, 0.6, 0.3)
     alpha = st.number_input("Alpha", 0.1, 0.6, 0.3)
     epsilon = st.number_input('Epsilon', 0.2, 1.1, 0.8)

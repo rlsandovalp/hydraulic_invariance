@@ -152,10 +152,19 @@ st.write('Total rain depth Chicago: ' + str(round(np.sum(chicago[:,1]), 2)) + ' 
 
 st.pyplot(plot_chicago())
 
-dates = ['07/09/2020']*13
-hours = ['01:00','01:05','01:10','01:15','01:20','01:25','01:30','01:35','01:40','01:45','01:50','01:55','02:00']
+veces = chicago.shape[0]+1
 
-df = pd.DataFrame(np.transpose([dates, hours, chicago[:,1]]))
+dates = ['07/09/2020']*veces
+
+time_list, hour, minute = [], 1, 0
+for vez in range(veces):
+    time_list.append(f"{hour:02d}:{minute:02d}")
+    minute = minute + dt
+    if vez%(60/dt-1) == 0 and vez >0:
+        hour = hour + 1
+        minute = 0
+
+df = pd.DataFrame(np.transpose([dates, time_list, chicago[:,1]]))
 
 chicago_hyetograph = df.to_csv(sep = ' ', index = False, header = False).encode('utf-8')
 
@@ -174,7 +183,7 @@ st.write('Total rain depth Uniform: ' + str(round(np.sum(uniform[:-1,1]), 2)) + 
 
 st.pyplot(plot_uniform())
 
-df_u = pd.DataFrame(np.transpose([dates, hours, uniform[:,1]]))
+df_u = pd.DataFrame(np.transpose([dates, time_list, uniform[:,1]]))
 
 uniform_hyetograph = df_u.to_csv(sep = ' ', index = False, header = False).encode('utf-8')
 

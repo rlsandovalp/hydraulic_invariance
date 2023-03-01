@@ -164,6 +164,10 @@ for vez in range(veces):
         hour = hour + 1
         minute = 0
 
+print(len(dates))
+print(len(time_list))
+print(chicago[:,1].size)
+
 df = pd.DataFrame(np.transpose([dates, time_list, chicago[:,1]]))
 
 chicago_hyetograph = df.to_csv(sep = ' ', index = False, header = False).encode('utf-8')

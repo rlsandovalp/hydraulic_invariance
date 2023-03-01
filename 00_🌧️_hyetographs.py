@@ -160,14 +160,10 @@ time_list, hour, minute = [], 1, 0
 for vez in range(veces):
     time_list.append(f"{hour:02d}:{minute:02d}")
     minute = minute + dt
-    if vez%(60/dt-1) == 0 and vez >0:
+    if minute == 60:
         hour = hour + 1
         minute = 0
 
-
-st.write(len(dates))
-st.write(len(time_list))
-st.write(chicago[:,1].size)
 
 df = pd.DataFrame(np.transpose([dates, time_list, chicago[:,1]]))
 

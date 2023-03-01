@@ -108,11 +108,11 @@ r'''
 col1, col2 = st.columns([1,2.5])
 
 with col1:
-    a1 = st.number_input('a1', 20.00, 40.00, 30.00, format = '%3f')
-    n = st.number_input('n', 0.10, 0.60, 0.30, format = '%4f')
-    alpha = st.number_input("Alpha", 0.10, 0.60, 0.30, format = '%5f')
-    epsilon = st.number_input('Epsilon', 0.20, 1.10, 0.80, format = '%6f')
-    kappa = st.number_input('Kappa', -1.0000, 1.0000, -0.0010, format = '%7f')
+    a1 = st.number_input('a1', 20.00, 40.00, 30.00, format = '%.3f')
+    n = st.number_input('n', 0.10, 0.60, 0.30, format = '%.4f')
+    alpha = st.number_input("Alpha", 0.10, 0.60, 0.30, format = '%.5f')
+    epsilon = st.number_input('Epsilon', 0.20, 1.10, 0.80, format = '%.6f')
+    kappa = st.number_input('Kappa', -1.0000, 1.0000, -0.0010, format = '%.7f')
 with col2:
     st.pyplot(plot_LSPP())
 

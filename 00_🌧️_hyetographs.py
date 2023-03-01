@@ -152,7 +152,7 @@ st.write('Total rain depth Chicago: ' + str(round(np.sum(chicago[:,1]), 2)) + ' 
 
 st.pyplot(plot_chicago())
 
-veces = chicago.shape[0]+1
+veces = chicago.shape[0]
 
 dates = ['07/09/2020']*veces
 

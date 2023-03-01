@@ -164,9 +164,10 @@ for vez in range(veces):
         hour = hour + 1
         minute = 0
 
-print(len(dates))
-print(len(time_list))
-print(chicago[:,1].size)
+
+st.write(len(dates))
+st.write(len(time_list))
+st.write(chicago[:,1].size)
 
 df = pd.DataFrame(np.transpose([dates, time_list, chicago[:,1]]))
 

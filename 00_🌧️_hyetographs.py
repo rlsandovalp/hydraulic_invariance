@@ -97,7 +97,7 @@ $$
 
 
 ### rain duration [hours], interval of hyetograph [min], position of the peak [0,1], and return period [years]
-duration_h = st.sidebar.number_input('Rain Duration [Hours]', 0.2, 6.0, 1.0)
+duration_h = st.sidebar.number_input('Rain Duration [Hours]', 0.2, 10.0, 1.0)
 dt = st.sidebar.number_input('Hyetograph interval [Minutes]', 1, 15, 5)
 r = st.sidebar.number_input('Position of the peak [0-1] (r)', 0.1, 0.9, 0.5)
 Tr = st.sidebar.number_input('Return period [Years]', 2, 500, 100)

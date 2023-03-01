@@ -111,7 +111,7 @@ with col1:
     a1 = st.number_input('a1', 20.00, 40.00, 30.00)
     n = st.number_input('n', 0.10, 0.60, 0.30)
     alpha = st.number_input("Alpha", 0.10, 0.60, 0.30)
-    epsilon = st.number_input('Epsilon', 0.20, 1.10, 0.80)
+    epsilon = st.number_input('Epsilon', 0.20, 1.10, 0.80, format = '%3f')
     kappa = st.number_input('Kappa', -1.0000, 1.0000, -0.0010, format = '%f')
 with col2:
     st.pyplot(plot_LSPP())

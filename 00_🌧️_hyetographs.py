@@ -97,7 +97,7 @@ $$
 
 
 ### rain duration [hours], interval of hyetograph [min], position of the peak [0,1], and return period [years]
-duration_h = st.sidebar.number_input('Rain Duration [Hours]', 0.2, 10.0, 1.0)
+duration_m = st.sidebar.number_input('Rain Duration [Minutes]', 10, 600.0, 1)
 dt = st.sidebar.number_input('Hyetograph interval [Minutes]', 1, 15, 5)
 r = st.sidebar.number_input('Position of the peak [0-1] (r)', 0.1, 0.9, 0.5)
 Tr = st.sidebar.number_input('Return period [Years]', 2, 500, 100)
@@ -118,7 +118,7 @@ with col2:
 
 
 ### Compute rain duration, total rain depth, and time to the peak 
-duration_m = duration_h*60
+duration_h = duration_m/60
 wtr = epsilon + alpha/kappa*(1-(np.log(Tr/(Tr-1)))**kappa)
 atr = a1*wtr
 h = atr*duration_h**n

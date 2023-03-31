@@ -54,11 +54,15 @@ def plot_LSPP():
 r'''
 ### Hyetographs 🌧️🌧️
 
-Code to compute the chicago and uniform hyetographs by employing the LSPP
-parameters of the Lombardy region in italy. Later I will add the equations.
+App developed by Leonardo Sandoval (https://www.mipore.polimi.it/dt_team/leonardo-sandoval/) to estimate the Chicago and uniform 
+hyetographs employing the LSPP parameters of the Lombardy region in Italy.
 
-You should specify, the parameter values, the duration of the rain, the intervals at which you want
-to recover the precipitation, the position of the peak, and the return period.
+To estimate a hyetograph you should specify: 
+- the LSPP parameter values
+- the total duration of the rain
+- the time intervals for which you want to recover the precipitation
+- the position of the peak $r$
+- and the return period.
 
 Rain depth for an uniform hyetogram:
 

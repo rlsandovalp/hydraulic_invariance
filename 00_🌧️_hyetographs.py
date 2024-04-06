@@ -128,7 +128,7 @@ with col1:
     chicago_hyetograph = df.to_csv(sep = ' ', index = False, header = False).encode('utf-8')
 
 
-    st.header('CHICAGO HYETOGRAPH')
+    st.header('Chicago Hyetograph')
     st.download_button(label = "Download Chicago for SWMM", data = chicago_hyetograph, file_name = 'RG_Chicago_'+str(Tr)+'.dat', mime = 'text/csv',)
     st.write('Total rain depth Chicago: ' + str(round(np.sum(chicago[:,1]), 2)) + ' mm')
     st.plotly_chart(plot_chicago(), use_container_width=True)
@@ -139,7 +139,7 @@ with col2:
     df_u = pd.DataFrame(np.transpose([dates, time_list, uniform[:,1]]))
     uniform_hyetograph = df_u.to_csv(sep = ' ', index = False, header = False).encode('utf-8')
 
-    st.header('UNIFORM HYETOGRAPH')
+    st.header('Uniform Hyetograph')
     st.download_button(label = "Download Uniform for SWMM", data = uniform_hyetograph, file_name = 'RG_Uniform_'+str(Tr)+'.dat', mime = 'text/csv',)
     st.write('Total rain depth Uniform: ' + str(round(np.sum(uniform[:-1,1]), 2)) + ' mm')
     st.plotly_chart(plot_uniform(), use_container_width=True)

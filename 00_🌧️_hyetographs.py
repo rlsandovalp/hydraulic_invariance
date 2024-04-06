@@ -2,6 +2,9 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import streamlit as st
+import plotly.figure_factory as ff
+import plotly.express as px
+import plotly.graph_objects as go
 
 
 st.set_page_config(
@@ -12,49 +15,56 @@ st.set_page_config(
 )
 
 def plot_chicago():
-    fig, ax = plt.subplots(figsize = (10,3))
-    ax.bar(chicago[:,0], chicago[:,1], width = -0.9*dt, align = 'edge')
-    for i in range(1, len(chicago[:,0])):
-        ax.text(chicago[i,0]-0.7*dt, chicago[i,1]+1, round(chicago[i,1],2))
-    ax.set_xlim(0,duration_m)
-    ax.set_ylim(0, 1.2*np.max(chicago[:,1]))
-    ax.set_title('Chicago Hyetograph')
-    ax.set_xlabel('Time [minutes]')
-    ax.set_ylabel('Rain depth [mm]')
+    fig = go.Figure()
+    fig.add_trace(go.Bar(x=chicago[:,0], y=chicago[:,1], name='Rain depth'))
+    fig.update_layout(
+        xaxis_title = 'Time [minutes]',
+        yaxis_title = 'Rain depth [mm]',
+        xaxis = dict(range = [0, duration_m+dt]),
+        yaxis = dict(range = [0, 1.2*np.max(chicago[:,1])]),
+        showlegend = False
+    )
     return fig
 
 def plot_uniform():
-    fig, ax = plt.subplots(figsize = (10,3))
-    ax.bar(uniform[:,0], uniform[:,1], width = -0.9*dt, align = 'edge')
-    for i in range(len(uniform[:,0])-1):
-        ax.text(uniform[i,0]+0.2*dt, uniform[i,1]+0.5, round(uniform[i,1],2))
-    ax.set_xlim(0,duration_m)
-    ax.set_ylim(0, 1.2*np.max(uniform[:,1]))
-    ax.set_title('Uniform Hyetograph')
-    ax.set_xlabel('Time [minutes]')
-    ax.set_ylabel('Rain depth [mm]')
+    fig = go.Figure()
+    fig.add_trace(go.Bar(x=uniform[1:,0], y=uniform[1:,1], name='Rain depth'))
+    fig.update_layout(
+        xaxis_title = 'Time [minutes]',
+        yaxis_title = 'Rain depth [mm]',
+        xaxis = dict(range = [0, duration_m+dt]),
+        yaxis = dict(range = [0, 1.2*np.max(uniform[:,1])]),
+        showlegend = False
+    )
     return fig
 
 def plot_LSPP():
-    fig, ax = plt.subplots(figsize = (5,3))
-    x = np.linspace(0,5,100)
+    x = np.linspace(0,5,1000)
     Tr = [10,50,100]
+
+    fig = go.Figure()
     for tr in Tr:
         wtr = epsilon + alpha/kappa*(1-(np.log(tr/(tr-1)))**kappa)
         h = a1*wtr*x**n
-        ax.plot(x, h, label = 'TR '+str(tr)+' anni')
-    ax.set_xlim(0,5)
-    ax.set_ylim(0, 140)
-    ax.set_xlabel(r'$d$ [ore]')
-    ax.set_ylabel(r'$h_{d,tr}$ [mm]')
-    plt.grid()
-    plt.legend()
+        fig.add_trace(go.Scatter(x=x, y=h, mode='lines', name='Tr '+str(tr)+' years'))
+
+    fig.update_layout(
+        xaxis_title = 'd [hours]',
+        yaxis_title = 'h<sub>d, tr</sub> [mm]',
+        xaxis = dict(range = [0, 5]),
+        yaxis = dict(range = [0, 140]),
+        legend = dict(x = 0, y = 1, traceorder = "normal", font = dict(family = "sans-serif", size = 12, color = "black"), 
+                      bgcolor = "LightSteelBlue", bordercolor = "Black", borderwidth = 1),
+        plot_bgcolor = 'white',
+        showlegend = True,
+        )
     return fig
+
 
 r'''
 ### Hyetographs 🌧️🌧️
 
-App developed by Leonardo Sandoval (https://www.mipore.polimi.it/dt_team/leonardo-sandoval/) to estimate the Chicago and uniform 
+Web tool developed by Leonardo Sandoval (https://www.mipore.polimi.it/dt_team/leonardo-sandoval/) to estimate the Chicago and uniform 
 hyetographs employing the LSPP parameters of the Lombardy region in Italy.
 
 To estimate a hyetograph you should specify: 
@@ -109,7 +119,7 @@ Tr = st.sidebar.number_input('Return period [Years]', 2, 500, 100)
 r'''
 ### LSPP curves
 '''
-col1, col2 = st.columns([1,2.5])
+col1, col2 = st.columns([1,2])
 
 with col1:
     a1 = st.number_input('a1', 20.00, 40.00, 30.00, format = '%.3f')
@@ -118,7 +128,7 @@ with col1:
     epsilon = st.number_input('Epsilon', 0.20, 1.10, 0.80, format = '%.3f')
     kappa = st.number_input('Kappa', -1.0000, 1.0000, -0.0010, format = '%.4f')
 with col2:
-    st.pyplot(plot_LSPP())
+    st.plotly_chart(plot_LSPP(), use_container_width=True)
 
 
 ### Compute rain duration, total rain depth, and time to the peak 
@@ -148,54 +158,45 @@ chicago[:,1] = aaa[:,2]
 uniform[:,0] = aaa[:,0]
 uniform[:,1] = a1*wtr*duration_h**(n-1)*dt/60
 
-r'''
-### Chicago hyetograph
-'''
 
-st.write('Total rain depth Chicago: ' + str(round(np.sum(chicago[:,1]), 2)) + ' mm')
+col1, col2 = st.columns([1,1])
 
-st.pyplot(plot_chicago())
+with col1:
+    ##### CHICAGO
 
-veces = chicago.shape[0]
+    veces = chicago.shape[0]
 
-dates = ['07/09/2020']*veces
+    dates = ['07/09/2020']*veces
 
-time_list, hour, minute = [], 1, 0
-for vez in range(veces):
-    time_list.append(f"{hour:02d}:{minute:02d}")
-    minute = minute + dt
-    if minute == 60:
-        hour = hour + 1
-        minute = 0
+    time_list, hour, minute = [], 1, 0
+    for vez in range(veces):
+        time_list.append(f"{hour:02d}:{minute:02d}")
+        minute = minute + dt
+        if minute == 60:
+            hour = hour + 1
+            minute = 0
+
+    df = pd.DataFrame(np.transpose([dates, time_list, chicago[:,1]]))
+    chicago_hyetograph = df.to_csv(sep = ' ', index = False, header = False).encode('utf-8')
 
 
-df = pd.DataFrame(np.transpose([dates, time_list, chicago[:,1]]))
+    st.header('CHICAGO HYETOGRAPH')
+    st.download_button(label = "Download Chicago for SWMM", data = chicago_hyetograph, file_name = 'RG_Chicago_'+str(Tr)+'.dat', mime = 'text/csv',)
+    st.write('Total rain depth Chicago: ' + str(round(np.sum(chicago[:,1]), 2)) + ' mm')
+    st.plotly_chart(plot_chicago(), use_container_width=True)
 
-chicago_hyetograph = df.to_csv(sep = ' ', index = False, header = False).encode('utf-8')
+with col2:
+    ##### UNIFORM
 
-st.download_button(
-    label = "Download Chicago",
-    data = chicago_hyetograph,
-    file_name = 'RG_Chicago_'+str(Tr)+'.dat',
-    mime = 'text/csv',
-)
+    df_u = pd.DataFrame(np.transpose([dates, time_list, uniform[:,1]]))
+    uniform_hyetograph = df_u.to_csv(sep = ' ', index = False, header = False).encode('utf-8')
 
-r'''
-### Uniform hyetograph
-'''
+    st.header('UNIFORM HYETOGRAPH')
+    st.download_button(label = "Download Uniform for SWMM", data = uniform_hyetograph, file_name = 'RG_Uniform_'+str(Tr)+'.dat', mime = 'text/csv',)
+    st.write('Total rain depth Uniform: ' + str(round(np.sum(uniform[:-1,1]), 2)) + ' mm')
+    st.plotly_chart(plot_uniform(), use_container_width=True)
 
-st.write('Total rain depth Uniform: ' + str(round(np.sum(uniform[:-1,1]), 2)) + ' mm')
 
-st.pyplot(plot_uniform())
 
-df_u = pd.DataFrame(np.transpose([dates, time_list, uniform[:,1]]))
 
-uniform_hyetograph = df_u.to_csv(sep = ' ', index = False, header = False).encode('utf-8')
-
-st.download_button(
-    label = "Download Uniform",
-    data = uniform_hyetograph,
-    file_name = 'RG_Uniform_'+str(Tr)+'.dat',
-    mime = 'text/csv',
-)
 

@@ -65,9 +65,8 @@ dt = st.sidebar.number_input('Hyetograph interval [Minutes]', 1, 30, 5)
 r = st.sidebar.number_input('Position of the peak [0-1] (r)', 0.1, 0.9, 0.5)
 Tr = st.sidebar.number_input('Return period [Years]', 2, 500, 100)
 
-r'''
-### LSPP curves
-'''
+st.header('LSPP Curves')
+
 col1, col2 = st.columns([1,2])
 
 with col1:

@@ -16,6 +16,7 @@ def plot_chicago():
     fig = go.Figure()
     fig.add_trace(go.Bar(x=chicago[:,0], y=chicago[:,1], name='Rain depth', offset = -dt, width = dt, marker=dict(line=dict(color='white', width=1))))
     fig.update_layout(
+        margin_t = 0,
         xaxis_title = 'Time [minutes]',
         yaxis_title = 'Rain depth [mm]',
         xaxis = dict(range = [0, duration_m]),
@@ -28,6 +29,7 @@ def plot_uniform():
     fig = go.Figure()
     fig.add_trace(go.Bar(x=uniform[1:,0], y=uniform[1:,1], name='Rain depth', offset = -dt, width = dt, marker=dict(line=dict(color='white', width=1))))
     fig.update_layout(
+        margin_t = 0,
         xaxis_title = 'Time [minutes]',
         yaxis_title = 'Rain depth [mm]',
         xaxis = dict(range = [0, duration_m]),
@@ -47,6 +49,9 @@ def plot_LSPP():
         fig.add_trace(go.Scatter(x=x, y=h, mode='lines', name='Tr '+str(tr)+' years'))
 
     fig.update_layout(
+        margin_l = 100,
+        margin_r = 100,
+        margin_t = 0,
         xaxis_title = 'd [hours]',
         yaxis_title = 'h<sub>d, tr</sub> [mm]',
         xaxis = dict(range = [0, 5]),
@@ -145,6 +150,66 @@ with col2:
     st.plotly_chart(plot_uniform(), use_container_width=True)
 
 
+with st.expander('Equations', expanded = False):
 
+    st.header('Equations behind Hyetographs 🌧️🌧️')
+
+    r'''
+    To estimate a hyetograph you should specify: 
+    - the LSPP parameter values ($\alpha$, $\kappa$, $\varepsilon$, $a_1$, $n$)
+    - the total duration of the rain ($d$   )
+    - the time intervals for which you want to recover the precipitation ($\Delta t$)
+    - the position of the peak ($r$)
+    - and the return period ($T_r$).
+    '''
+
+    st.subheader('Rain depth for an uniform hyetogram')
+
+    r'''
+    $$
+    W_{T_r} = \varepsilon + \frac{\alpha}{\kappa}\left[1-\left[\ln\left(\frac{Tr}{Tr-1}\right)\right]^{\kappa}\right]
+    $$
+
+    $$
+    a_{T_r} = a_1 * W_{T_r}
+    $$
+
+    $$
+    i(t) = a1*W_{T_r}*d^{n-1}
+    $$
+
+    $$
+    h(t) = i(t) \frac{dt}{60}
+    $$
+    '''
+
+    st.subheader('Rain depth for an Chicago hyetogram')
+
+    r'''
+
+    $t_p = rd$
+
+    When $t<t_p$
+    $$
+    H(t) = r a_{T_r} \left[\left(\frac{t_p}{r}\right)^n-\left(\frac{t_p-t}{r}\right)^n\right]
+    $$
+
+    When $t>t_p$
+    $$
+    H(t) = a_{T_r} \left[r \left(\frac{t_p}{r}\right)^n-(1-r)\left(\frac{t_p-t}{1-r}\right)^n\right]
+    $$
+
+    $$
+    h(t) = H(t+\Delta t) - H(t)
+    $$
+    '''
+
+
+with st.expander('About this tool', expanded = False):
+    r'''
+    This tool was developed by [Leonardo Sandoval](https://www.linkedin.com/in/rafael-leonardo-sandoval-pab%C3%B3n-6a04b89b/) to estimate hyetographs for hydrological studies, following the LSPP (Linee Segnalatrici di Possibilità Pluviometrica) methodology typically employed in the Lombardy region of Italy.
+
+    The tool requests information of the effective parameters of the LSPP method for a given area as well as the total duration of the rain, the time intervals for which you want to recover the precipitation, the position of the peak, and the return period. Then it calculates the rain depth for an uniform hyetogram and a Chicago hyetogram, plotting the results. The user can download the hyetogram data than can then be used in SWMM (or any other software) for further analysis.
+    '''
 
 

@@ -1,0 +1,25 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import streamlit as st
+import plotly.graph_objects as go
+
+
+st.set_page_config(
+    page_title="Analyze a Network",
+    page_icon="🕸️",
+    layout="wide",
+    initial_sidebar_state="auto"
+)
+
+st.header('Select the files')
+mode = st.radio("Do you want to upload your network files or use the default files?", ("Upload a file", "Use default values"))
+
+if mode == "Upload a file":
+    links = st.file_uploader("Upload your file with the information of the links", type=["inp"])
+    nodes = st.file_uploader("Upload your file with the information of the nodes", type=["inp"])
+    area = st.file_uploader("Upload your file with the information of the area", type=["inp"])
+else:
+    links = open('data/links.inp', 'r')
+    nodes = open('data/nodes.inp', 'r')
+    area = open('data/area.inp', 'r')

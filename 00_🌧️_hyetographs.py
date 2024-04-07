@@ -60,10 +60,10 @@ def plot_LSPP():
 
 
 ### rain duration [hours], interval of hyetograph [min], position of the peak [0,1], and return period [years]
-duration_m = st.sidebar.number_input(r'Rain Duration $d$ [Minutes]', 10, 600, 60)
-dt = st.sidebar.number_input(r'Hyetograph interval $\Delta t$ [Minutes]', 1, 30, 5)
-r = st.sidebar.number_input(r'Position of the peak $r$ [0-1]', 0.1, 0.9, 0.5)
-Tr = st.sidebar.number_input(r'Return period $T_r$ [Years]', 2, 500, 100)
+duration_m = st.sidebar.number_input(r'Rain Duration $(d)$ [Minutes]', 10, 600, 60)
+dt = st.sidebar.number_input(r'Hyetograph interval $(\Delta t)$ [Minutes]', 1, 30, 5)
+r = st.sidebar.number_input(r'Position of the peak $(r)$ [0-1]', 0.1, 0.9, 0.5)
+Tr = st.sidebar.number_input(r'Return period $(T_r)$ [Years]', 2, 500, 100)
 
 st.header('LSPP Curves')
 
@@ -74,7 +74,7 @@ with col1:
     n = st.number_input(r'$n$', 0.10, 0.60, 0.30, format = '%.3f')
     alpha = st.number_input(r"$\alpha$", 0.10, 0.60, 0.30, format = '%.3f')
     epsilon = st.number_input(r'$\varepsilon$', 0.20, 1.10, 0.80, format = '%.3f')
-    kappa = st.number_input(r'\kappa', -1.0000, 1.0000, -0.0010, format = '%.4f')
+    kappa = st.number_input(r'$\kappa$', -1.0000, 1.0000, -0.0010, format = '%.4f')
 with col2:
     st.plotly_chart(plot_LSPP(), use_container_width=True)
 

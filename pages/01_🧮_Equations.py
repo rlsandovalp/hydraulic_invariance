@@ -11,14 +11,16 @@ st.header('Equations behind Hyetographs 🌧️🌧️')
 
 r'''
 To estimate a hyetograph you should specify: 
-- the LSPP parameter values
+- the LSPP parameter values ($\alpha$, $\kappa$, $\varepsilon$, $a_1$, $n$)
 - the total duration of the rain
-- the time intervals for which you want to recover the precipitation
-- the position of the peak $r$
-- and the return period.
+- the time intervals for which you want to recover the precipitation ($\Delta t$)
+- the position of the peak ($r$)
+- and the return period ($T_r$).
+'''
 
-Rain depth for an uniform hyetogram:
+st.subheader('Rain depth for an uniform hyetogram')
 
+r'''
 $$
 W_{T_r} = \varepsilon + \frac{\alpha}{\kappa}\left[1-\left[\ln\left(\frac{Tr}{Tr-1}\right)\right]^{\kappa}\right]
 $$
@@ -34,8 +36,13 @@ $$
 $$
 h(t) = i(t) \frac{dt}{60}
 $$
+'''
 
-Rain depth for an Chicago hyetogram $t_p = rd$:
+st.subheader('Rain depth for an Chicago hyetogram')
+
+r'''
+
+$t_p = rd$
 
 When $t<t_p$
 $$

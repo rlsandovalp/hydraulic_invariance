@@ -14,11 +14,11 @@ st.set_page_config(
 
 def plot_chicago():
     fig = go.Figure()
-    fig.add_trace(go.Bar(x=chicago[:,0], y=chicago[:,1], name='Rain depth'))
+    fig.add_trace(go.Bar(x=chicago[:,0], y=chicago[:,1], name='Rain depth', offset = -5))
     fig.update_layout(
         xaxis_title = 'Time [minutes]',
         yaxis_title = 'Rain depth [mm]',
-        xaxis = dict(range = [0, duration_m+dt]),
+        xaxis = dict(range = [0, duration_m]),
         yaxis = dict(range = [0, 1.2*np.max(chicago[:,1])]),
         showlegend = False
     )
@@ -30,7 +30,7 @@ def plot_uniform():
     fig.update_layout(
         xaxis_title = 'Time [minutes]',
         yaxis_title = 'Rain depth [mm]',
-        xaxis = dict(range = [0, duration_m+dt]),
+        xaxis = dict(range = [0, duration_m]),
         yaxis = dict(range = [0, 1.2*np.max(uniform[:,1])]),
         showlegend = False
     )

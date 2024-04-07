@@ -14,7 +14,7 @@ st.set_page_config(
 
 def plot_chicago():
     fig = go.Figure()
-    fig.add_trace(go.Bar(x=chicago[:,0], y=chicago[:,1], name='Rain depth', offset = -dt))
+    fig.add_trace(go.Bar(x=chicago[:,0], y=chicago[:,1], name='Rain depth', offset = -dt, width = dt))
     fig.update_layout(
         xaxis_title = 'Time [minutes]',
         yaxis_title = 'Rain depth [mm]',

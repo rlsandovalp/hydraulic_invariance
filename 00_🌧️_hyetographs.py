@@ -26,7 +26,7 @@ def plot_chicago():
 
 def plot_uniform():
     fig = go.Figure()
-    fig.add_trace(go.Bar(x=uniform[1:,0], y=uniform[1:,1], name='Rain depth', offset = -dt, width = dt))
+    fig.add_trace(go.Bar(x=uniform[1:,0], y=uniform[1:,1], name='Rain depth', offset = -dt, width = dt, marker=dict(line=dict(color='white', width=1))))
     fig.update_layout(
         xaxis_title = 'Time [minutes]',
         yaxis_title = 'Rain depth [mm]',

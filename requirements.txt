@@ -7,5 +7,3 @@ scipy
 folium
 pyproj
 geopandas
-tempfile
-zipfile

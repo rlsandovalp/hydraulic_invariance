@@ -7,3 +7,4 @@ scipy
 folium
 pyproj
 geopandas
+streamlit-folium

@@ -4,3 +4,8 @@ streamlit
 matplotlib
 plotly
 scipy
+folium
+pyproj
+geopandas
+tempfile
+zipfile

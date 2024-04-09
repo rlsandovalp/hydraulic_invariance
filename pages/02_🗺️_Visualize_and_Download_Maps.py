@@ -7,13 +7,6 @@ from branca.colormap import linear
 import tempfile
 from zipfile import ZipFile
 
-def my_color_function(feature):
-    """Maps low values to green and high values to red."""
-    if unemployment_dict[feature["id"]] > 6.5:
-        return "#ff0000"
-    else:
-        return "#008000"
-
 st.set_page_config(
     page_title="Download Maps",
     page_icon="🗺️",
